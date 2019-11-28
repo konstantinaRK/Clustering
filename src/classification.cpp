@@ -103,14 +103,16 @@ Classification_Points::Classification_Points(string input_file, string config, s
 		{
 			try
 			{
-				this->clusterings.push_back(new Point_Clustering(111, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Point_Clustering(112, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Point_Clustering(121, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Point_Clustering(122, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Point_Clustering(211, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Point_Clustering(212, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Point_Clustering(221, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Point_Clustering(222, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Point_Clustering(111, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Point_Clustering(112, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Point_Clustering(121, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Point_Clustering(122, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Point_Clustering(211, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Point_Clustering(212, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Point_Clustering(221, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Point_Clustering(222, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Point_Clustering(i, this->cluster_num, &(this->data)));
+
 			}
 			catch (std::bad_alloc & ba)
 			{
@@ -229,14 +231,15 @@ Classification_Curves::Classification_Curves(string input_file, string config, s
 		{
 			try
 			{
-				this->clusterings.push_back(new Curve_Clustering(111, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Curve_Clustering(112, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Curve_Clustering(121, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Curve_Clustering(122, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Curve_Clustering(211, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Curve_Clustering(212, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Curve_Clustering(221, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Curve_Clustering(222, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Curve_Clustering(111, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Curve_Clustering(112, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Curve_Clustering(121, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Curve_Clustering(122, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Curve_Clustering(211, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Curve_Clustering(212, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Curve_Clustering(221, this->cluster_num, &(this->data)));
+				// this->clusterings.push_back(new Curve_Clustering(222, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Curve_Clustering(i, this->cluster_num, &(this->data)));
 			}
 			catch (std::bad_alloc & ba)
 			{
@@ -258,7 +261,6 @@ Classification_Curves::Classification_Curves(string input_file, string config, s
 			throw;
 		}
 	}
-
 }
 
 Classification_Curves::~Classification_Curves()
