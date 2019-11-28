@@ -92,7 +92,9 @@ Classification::~Classification()
 // Class Classification_Points functions
 Classification_Points::Classification_Points(string input_file, string config, short int flag): Classification(config)
 {
-	// TODO: read points
+	// Read points
+	if ( !read(input_file, &(this->data)) )
+		throw;
 
 	// Initialize clusterings
 	if (flag == 0)
@@ -101,14 +103,14 @@ Classification_Points::Classification_Points(string input_file, string config, s
 		{
 			try
 			{
-				this->clusterings.push_back(new Point_Clustering(111, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Point_Clustering(112, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Point_Clustering(121, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Point_Clustering(122, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Point_Clustering(211, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Point_Clustering(212, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Point_Clustering(221, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Point_Clustering(222, this->cluster_num, this->data.size()));
+				this->clusterings.push_back(new Point_Clustering(111, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Point_Clustering(112, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Point_Clustering(121, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Point_Clustering(122, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Point_Clustering(211, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Point_Clustering(212, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Point_Clustering(221, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Point_Clustering(222, this->cluster_num, &(this->data)));
 			}
 			catch (std::bad_alloc & ba)
 			{
@@ -122,7 +124,7 @@ Classification_Points::Classification_Points(string input_file, string config, s
 	{
 		try
 		{
-			this->clusterings.push_back(new Point_Clustering(flag, this->cluster_num, this->data.size()));
+			this->clusterings.push_back(new Point_Clustering(flag, this->cluster_num, &(this->data)));
 		}
 		catch (std::bad_alloc & ba)
 		{
@@ -227,14 +229,14 @@ Classification_Curves::Classification_Curves(string input_file, string config, s
 		{
 			try
 			{
-				this->clusterings.push_back(new Curve_Clustering(111, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Curve_Clustering(112, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Curve_Clustering(121, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Curve_Clustering(122, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Curve_Clustering(211, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Curve_Clustering(212, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Curve_Clustering(221, this->cluster_num, this->data.size()));
-				this->clusterings.push_back(new Curve_Clustering(222, this->cluster_num, this->data.size()));
+				this->clusterings.push_back(new Curve_Clustering(111, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Curve_Clustering(112, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Curve_Clustering(121, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Curve_Clustering(122, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Curve_Clustering(211, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Curve_Clustering(212, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Curve_Clustering(221, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Curve_Clustering(222, this->cluster_num, &(this->data)));
 			}
 			catch (std::bad_alloc & ba)
 			{
@@ -248,7 +250,7 @@ Classification_Curves::Classification_Curves(string input_file, string config, s
 	{
 		try
 		{
-			this->clusterings.push_back(new Curve_Clustering(flag, this->cluster_num, this->data.size()));
+			this->clusterings.push_back(new Curve_Clustering(flag, this->cluster_num, &(this->data)));
 		}
 		catch (std::bad_alloc & ba)
 		{
@@ -265,19 +267,20 @@ Classification_Curves::~Classification_Curves()
 }
 
 // Class Clustering functions
-Clustering::Clustering(short int flag, int cluster_num, int data_size)
-{
-	this->flag = flag;
+// Clustering::Clustering(short int flag, int cluster_num, vector<Point*>* data)
+// {
+// 	this->flag = flag;
 
-	if (this->flag < 200)
-	{
-		this->initialization1(cluster_num, data_size);
-	}
-	else
-	{
-		this->initialization2();
-	}
-}
+// 	if (this->flag < 200)
+// 	{
+// 		int data_size = (*data).size();
+// 		this->initialization1(cluster_num, data_size);
+// 	}
+// 	else
+// 	{
+// 		this->initialization2(cluster_num, data);
+// 	}
+// }
 
 void Clustering::initialization1(int cluster_num, int data_size)
 {
@@ -292,9 +295,182 @@ void Clustering::initialization1(int cluster_num, int data_size)
 }
 
 // Class Point_Clustering functions
-Point_Clustering::Point_Clustering(short int flag, int cluster_num, int data_size): Clustering(flag, cluster_num, data_size)
-{}
+Point_Clustering::Point_Clustering(short int flag, int cluster_num, vector<Point*>* data) /*:Clustering(flag, cluster_num, data)*/{
+
+	this->flag = flag;
+
+	if (this->flag < 200)
+	{
+		int data_size = (*data).size();
+		this->initialization1(cluster_num, data_size);
+	}
+	else
+	{
+		this->initialization2(cluster_num, data);
+	}
+}
 
 // Class Curve_Clustering functions
-Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, int data_size): Clustering(flag, cluster_num, data_size)
+Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data) /*:Clustering(flag, cluster_num, data)*/
 {}
+
+void Point_Clustering::initialization2(int cluster_num, vector<Point*>* data){
+
+	// Δεν νομιζω πως χρειαζεται γιατι θα ειναι αδεια
+	this->centers.clear();
+
+	int data_size = data->size();
+
+// cout << "\ncluster_num is " << cluster_num << endl;
+
+	random_device rd;  //Will be used to obtain a seed for the random number engine
+    mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    uniform_int_distribution<> dis(0, data_size-1);
+
+	this->centers.insert(dis(gen));
+
+	for (int t = 1; t < cluster_num; ++t)	// Until all centers have been chosen
+	{
+		double sum = 0;
+		vector<double> P;
+
+		double max_D_i = 0;
+		for (int i = 0; i < data_size; ++i)	// For every point
+		{
+			if ( this->centers.find(i) == this->centers.end() )	// if the point is not a center
+			{
+				double D_i = this->min_dist(data, i);
+				sum += D_i*D_i;
+				P.push_back(sum);
+
+				if ( max_D_i < D_i )
+					max_D_i = D_i;
+			}
+		}
+
+		// Normalize P
+		for (unsigned int i = 0; i < P.size(); ++i)
+		{
+			P[i] = P[i]/max_D_i; 
+		}
+
+    	uniform_real_distribution<> dis(0.0, P[P.size()-1]/1.0);
+
+    	double x = dis(gen);
+// cout << "x is " << x << " and p is " << P[P.size()-1] <<endl;
+   		int r = this->binary_search(&P, x);	// P(r-1) < x <= P(r)
+// if ( r!=0 )cout << "p(r-1) is " << P[r-1] << endl;
+// cout << "p(r) is " << P[r] << endl;
+   		int c_num = 0;
+
+   		// Find num of centers before the r_pos
+		set <int, greater <int> > :: iterator itr = centers.begin();
+   		for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)
+   		{
+   			if ( (*itr) <= r )
+   				c_num++;
+   		}
+
+   		while ( this->centers.find(r+c_num) != this->centers.end() ) c_num++;	// While the current point is a center
+    	this->centers.insert(r+c_num);
+	}
+
+// cout << "centers are " << endl;
+// 	set <int, greater <int> > :: iterator itr = centers.begin();
+//    	for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)
+//    	{
+//    		cout << *itr << endl;
+//    	}
+}
+
+void Point_Clustering::assignment1(vector<Point*>* data){
+
+	// Erase the previous clusters
+	this->clusters.clear();
+
+	for (unsigned int i = 0; i < (*data).size(); ++i)
+	{
+		double min_dist = -1, cur_dist;
+		int min_c;
+		if ( this->centers.find(i) != this->centers.end() )		// If the point is not a center
+		{
+			set <int, greater <int> > :: iterator itr;
+			for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)	// For every center
+			{
+				if ( min_dist == -1 )	// If this is the first distance calculated
+				{
+					min_dist = manhattan_dist((*data)[*itr], (*data)[i]);
+					min_c = *itr;
+				}
+				else
+				{
+					cur_dist = manhattan_dist((*data)[*itr], (*data)[i]);	// Calculate distance between
+					if ( min_dist < cur_dist )	// If the current center is closer
+					{
+						min_dist = cur_dist;
+						min_c = *itr;
+					}
+				}
+			}
+		}
+		this->clusters.insert(pair<int, int> (min_c, i));
+	}
+}
+
+double Point_Clustering::binary_search(vector<double>* P, double x){
+
+	int l = 0, h = (*P).size()-1, m;
+	double middle_value;
+		
+	// Corner case
+	if ( x == (*P)[h] )
+		return h;
+
+	// Binary search
+	while ( l < h )
+	{
+
+		m = (h+l)/2;
+		middle_value = (*P)[m];
+		if ( middle_value == x )
+			return m;
+		else if ( x < middle_value )
+		{
+			if ( m > 0 && x > (*P)[m-1]) 	// If this is not the first element and P[m-1] < x < P[m]
+                return m; 
+			h = m;		// Choose the left half
+		}
+		else
+		{
+			if ( m < (int)((*P).size()-1) && x < (*P)[m+1] )	// If this is not the last element and P[m] < x < P[m+1]
+                return m+1;
+			l = m + 1;	// Choose the right half
+		}
+	}
+
+	return m;
+}
+
+double Point_Clustering::min_dist(vector<Point*>* data, int pos)
+{
+	Point* point = (*data)[pos];
+	set <int, greater <int> > :: iterator itr;
+
+	double min, cur_dist;
+	for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)
+	{
+		if ( itr == this->centers.begin() )	// If this is the first center
+		{
+			min = manhattan_dist(point, (*data)[*itr]);
+		}
+		else
+		{
+			cur_dist = manhattan_dist(point, (*data)[*itr]);
+			if ( cur_dist < min )	// If the distance from the current center is smaller
+				min = cur_dist;	
+		}
+
+	}
+
+	return min;
+}

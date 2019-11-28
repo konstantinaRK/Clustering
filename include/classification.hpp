@@ -51,8 +51,9 @@ class Clustering
 	protected:
 		set <int> centers;
 		short int flag;
+		multimap<int, int> clusters;
 	public:
-		Clustering(short int flag, int cluster_num, int data_size);
+		// Clustering(short int flag, int cluster_num, vector<Point*>* data){};
 		virtual ~Clustering(){};
 		virtual void initialization1(int cluster_num, int data_size);
 		virtual void initialization2(){};
@@ -66,11 +67,13 @@ class Clustering
 class Point_Clustering: public Clustering
 {
 	private:
+		double binary_search(vector<double>* P, double x);
+		double min_dist(vector<Point*>* data, int pos);
 	public:
-		Point_Clustering(short int flag, int cluster_num, int data_size);
+		Point_Clustering(short int flag, int cluster_num, vector<Point*>* data);
 		// ~Point_Clustering(){};
-		void initialization2(){};
-		void assignment1(){};
+		void initialization2(int cluster_num, vector<Point*>* data);
+		void assignment1(vector<Point*>* data);
 		void assignment2(){};
 		void update1(){};
 		void update2(){};
@@ -81,7 +84,7 @@ class Curve_Clustering: public Clustering
 {
 	private:
 	public:
-		Curve_Clustering(short int flag, int cluster_num, int data_size);
+		Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data);
 		// ~Curve_Clustering(){};
 		void initialization2(){};
 		void assignment1(){};

@@ -4,6 +4,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <cmath>
+#include <bits/stdc++.h> 
 #include "./classification.hpp"
 
 using namespace std;
@@ -50,5 +53,15 @@ void delete_vector(vector<C*>* v){
 
 	(*v).clear();
 }
+
+double min(double x, double y, double z, string* direction);
+
+double DTW_distance(Curve* x1, Curve* x2, vector<pair<int, int>>* opt_trav=NULL);
+double eucl_dist(pair<double, double> x, pair<double, double> y);
+double manhattan_dist(Point* x, Point* y);
+
+bool read(string file_name, vector<Point*>* points);
+bool point_proccessing(vector<Point*>* points, string p, int d = -1);
+
 
 #endif
