@@ -49,11 +49,11 @@ class Classification_Curves: public Classification
 class Clustering
 {
 	protected:
-		set <int> centers;
+		unordered_set <int> centers;
 		short int flag;
 		multimap<int, int> clusters;
 	public:
-		// Clustering(short int flag, int cluster_num, vector<Point*>* data){};
+		// Clustering(short int flag, int cluster_num, vector<Point*>* data);
 		virtual ~Clustering(){};
 		virtual void initialization1(int cluster_num, int data_size);
 		virtual void initialization2(){};
