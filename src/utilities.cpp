@@ -378,3 +378,9 @@ bool point_proccessing(vector<Point*>* points, string p, int d){
 
 	return true;
 }
+
+
+double DTW(Curve *x1, Curve * x2){
+
+	return DTW_distance(x1, x2);
+}

@@ -49,13 +49,14 @@ class Classification_Curves: public Classification
 class Clustering
 {
 	protected:
-		unordered_set <int> centers;
+		vector <int> centers;
 		short int flag;
 		multimap<int, int> clusters;
 	public:
 		// Clustering(short int flag, int cluster_num, vector<Point*>* data);
 		virtual ~Clustering(){};
-		virtual void initialization1(int cluster_num, int data_size);
+		template<typename vector_type, typename Function>
+		void initialization1(unsigned int cluster_num, vector<vector_type*>* data, Function dist_function);
 		virtual void initialization2(){};
 		virtual void assignment1(){};
 		virtual void assignment2(){};
@@ -68,7 +69,7 @@ class Point_Clustering: public Clustering
 {
 	private:
 		double binary_search(vector<double>* P, double x);
-		double min_dist(vector<Point*>* data, int pos);
+		// double min_dist(vector<Point*>* data, int pos);
 	public:
 		Point_Clustering(short int flag, int cluster_num, vector<Point*>* data);
 		// ~Point_Clustering(){};

@@ -64,4 +64,7 @@ bool read(string file_name, vector<Point*>* points);
 bool point_proccessing(vector<Point*>* points, string p, int d = -1);
 
 
+// TODO
+double DTW(Curve *x1, Curve * x2);
+
 #endif

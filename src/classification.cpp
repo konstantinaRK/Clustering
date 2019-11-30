@@ -273,26 +273,41 @@ Classification_Curves::~Classification_Curves()
 // {
 // 	this->flag = flag;
 
-// 	if (this->flag < 200)
-// 	{
-// 		int data_size = (*data).size();
-// 		this->initialization1(cluster_num, data_size);
-// 	}
-// 	else
-// 	{
-// 		this->initialization2(cluster_num, data);
-// 	}
+	// if (this->flag % 2 == 0)	// xx0 == Initialization 1
+	// {
+		// this->initialization1(cluster_num, data);
+	// }
+	// else	// xx1 == Initialization 2
+	// {
+		// this->initialization2(cluster_num, data);
+	// }
+
+	// x0x == Assign 1
+	// x1x == Assign 2
+	// 0xx == Update 1
+	// 1xx == Update 2
 // }
 
-void Clustering::initialization1(int cluster_num, int data_size)
+template<typename vector_type, typename Function>
+void Clustering::initialization1(unsigned int cluster_num, vector<vector_type*>* data, Function dist_function)
 {
 	std::random_device rd;  //Will be used to obtain a seed for the random number engine
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    std::uniform_int_distribution<> dis(0, data_size-1);
+    std::uniform_int_distribution<> dis(0, data->size()-1);
 
-	while((int)this->centers.size() < cluster_num)
+    int new_center;
+	while(this->centers.size() < data->size())
 	{
-		this->centers.insert(dis(gen));
+		new_center = dis(gen);
+		// Check if its already a center or if there is a center with distance 0 from the new center
+		for (unsigned int i = 0; i < this->centers.size(); i++)
+		{
+			// Check if there is a center with distance 0 from the new center
+			if ((this->centers.at(i) == new_center) || (dist_function(data->at(this->centers.at(i)), data->at(new_center)) != 0))
+			{
+				this->centers.push_back(new_center);
+			}
+		}
 	} 
 }
 
@@ -301,125 +316,146 @@ Point_Clustering::Point_Clustering(short int flag, int cluster_num, vector<Point
 
 	this->flag = flag;
 
-	if (this->flag < 200)
+	if (this->flag % 2 == 0)	// xx0 == Initialization 1
 	{
-		int data_size = (*data).size();
-		this->initialization1(cluster_num, data_size);
+		this->initialization1(cluster_num, data, manhattan_dist);
 	}
-	else
+	else	// xx1 == Initialization 2
 	{
 		this->initialization2(cluster_num, data);
 	}
+
+	// x0x == Assign 1
+	// x1x == Assign 2
+	// 0xx == Update 1
+	// 1xx == Update 2
 }
 
 // Class Curve_Clustering functions
 Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data) /*:Clustering(flag, cluster_num, data)*/
-{}
+{
+	this->flag = flag;
+
+	if (this->flag % 2 == 0)	// xx0 == Initialization 1
+	{
+		this->initialization1(cluster_num, data, DTW);
+	}
+	else	// xx1 == Initialization 2
+	{
+		// this->initialization2(cluster_num, data);
+	}
+
+	// x0x == Assign 1
+	// x1x == Assign 2
+	// 0xx == Update 1
+	// 1xx == Update 2
+}
 
 void Point_Clustering::initialization2(int cluster_num, vector<Point*>* data){
 
 	// Δεν νομιζω πως χρειαζεται γιατι θα ειναι αδεια
-	this->centers.clear();
+// 	this->centers.clear();
 
-	int data_size = data->size();
+// 	int data_size = data->size();
 
-// cout << "\ncluster_num is " << cluster_num << endl;
+// // cout << "\ncluster_num is " << cluster_num << endl;
 
-	random_device rd;  //Will be used to obtain a seed for the random number engine
-    mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    uniform_int_distribution<> dis(0, data_size-1);
+// 	random_device rd;  //Will be used to obtain a seed for the random number engine
+//     mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+//     uniform_int_distribution<> dis(0, data_size-1);
 
-	this->centers.insert(dis(gen));
+// 	this->centers.insert(dis(gen));
 
-	for (int t = 1; t < cluster_num; ++t)	// Until all centers have been chosen
-	{
-		double sum = 0;
-		vector<double> P;
+// 	for (int t = 1; t < cluster_num; ++t)	// Until all centers have been chosen
+// 	{
+// 		double sum = 0;
+// 		vector<double> P;
 
-		double max_D_i = 0;
-		for (int i = 0; i < data_size; ++i)	// For every point
-		{
-			if ( this->centers.find(i) == this->centers.end() )	// if the point is not a center
-			{
-				double D_i = this->min_dist(data, i);
-				sum += D_i*D_i;
-				P.push_back(sum);
+// 		double max_D_i = 0;
+// 		for (int i = 0; i < data_size; ++i)	// For every point
+// 		{
+// 			if ( this->centers.find(i) == this->centers.end() )	// if the point is not a center
+// 			{
+// 				double D_i = this->min_dist(data, i);
+// 				sum += D_i*D_i;
+// 				P.push_back(sum);
 
-				if ( max_D_i < D_i )
-					max_D_i = D_i;
-			}
-		}
+// 				if ( max_D_i < D_i )
+// 					max_D_i = D_i;
+// 			}
+// 		}
 
-		// Normalize P
-		for (unsigned int i = 0; i < P.size(); ++i)
-		{
-			P[i] = P[i]/max_D_i; 
-		}
+// 		// Normalize P
+// 		for (unsigned int i = 0; i < P.size(); ++i)
+// 		{
+// 			P[i] = P[i]/max_D_i; 
+// 		}
 
-    	uniform_real_distribution<> dis(0.0, P[P.size()-1]/1.0);
+//     	uniform_real_distribution<> dis(0.0, P[P.size()-1]/1.0);
 
-    	double x = dis(gen);
-// cout << "x is " << x << " and p is " << P[P.size()-1] <<endl;
-   		int r = this->binary_search(&P, x);	// P(r-1) < x <= P(r)
-// if ( r!=0 )cout << "p(r-1) is " << P[r-1] << endl;
-// cout << "p(r) is " << P[r] << endl;
-   		int c_num = 0;
+//     	double x = dis(gen);
+// // cout << "x is " << x << " and p is " << P[P.size()-1] <<endl;
+//    		int r = this->binary_search(&P, x);	// P(r-1) < x <= P(r)
+// // if ( r!=0 )cout << "p(r-1) is " << P[r-1] << endl;
+// // cout << "p(r) is " << P[r] << endl;
+//    		int c_num = 0;
 
-   		// Find num of centers before the r_pos
-		set <int, greater <int> > :: iterator itr = centers.begin();
-   		for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)
-   		{
-   			if ( (*itr) <= r )
-   				c_num++;
-   		}
+//    		// Find num of centers before the r_pos
+// 		set <int, greater <int> > :: iterator itr = centers.begin();
+//    		for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)
+//    		{
+//    			if ( (*itr) <= r )
+//    				c_num++;
+//    		}
 
-   		while ( this->centers.find(r+c_num) != this->centers.end() ) c_num++;	// While the current point is a center
-    	this->centers.insert(r+c_num);
-	}
+//    		while ( this->centers.find(r+c_num) != this->centers.end() ) c_num++;	// While the current point is a center
+//     	this->centers.insert(r+c_num);
+// 	}
 
-// cout << "centers are " << endl;
-// 	set <int, greater <int> > :: iterator itr = centers.begin();
-//    	for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)
-//    	{
-//    		cout << *itr << endl;
-//    	}
+// // cout << "centers are " << endl;
+// // 	set <int, greater <int> > :: iterator itr = centers.begin();
+// //    	for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)
+// //    	{
+// //    		cout << *itr << endl;
+// //    	}
 }
 
 void Point_Clustering::assignment1(vector<Point*>* data){
 
 	// Erase the previous clusters
-	this->clusters.clear();
+	// this->clusters.clear();
 
-	for (unsigned int i = 0; i < (*data).size(); ++i)
-	{
-		double min_dist = -1, cur_dist;
-		int min_c;
-		if ( this->centers.find(i) != this->centers.end() )		// If the point is not a center
-		{
-			set <int, greater <int> > :: iterator itr;
-			for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)	// For every center
-			{
-				if ( min_dist == -1 )	// If this is the first distance calculated
-				{
-					min_dist = manhattan_dist((*data)[*itr], (*data)[i]);
-					min_c = *itr;
-				}
-				else
-				{
-					cur_dist = manhattan_dist((*data)[*itr], (*data)[i]);	// Calculate distance between
-					if ( min_dist < cur_dist )	// If the current center is closer
-					{
-						min_dist = cur_dist;
-						min_c = *itr;
-					}
-				}
-			}
-		}
-		this->clusters.insert(pair<int, int> (min_c, i));
-	}
+	// for (unsigned int i = 0; i < (*data).size(); ++i)
+	// {
+	// 	double min_dist = -1, cur_dist;
+	// 	int min_c;
+	// 	if ( this->centers.find(i) != this->centers.end() )		// If the point is not a center
+	// 	{
+	// 		set <int, greater <int> > :: iterator itr;
+	// 		for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)	// For every center
+	// 		{
+	// 			if ( min_dist == -1 )	// If this is the first distance calculated
+	// 			{
+	// 				min_dist = manhattan_dist((*data)[*itr], (*data)[i]);
+	// 				min_c = *itr;
+	// 			}
+	// 			else
+	// 			{
+	// 				cur_dist = manhattan_dist((*data)[*itr], (*data)[i]);	// Calculate distance between
+	// 				if ( min_dist < cur_dist )	// If the current center is closer
+	// 				{
+	// 					min_dist = cur_dist;
+	// 					min_c = *itr;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	this->clusters.insert(pair<int, int> (min_c, i));
+	// }
 }
 
-double Point_Clustering::binary_search(vector<double>* P, double x){
+double Point_Clustering::binary_search(vector<double>* P, double x)
+{
 
 	int l = 0, h = (*P).size()-1, m;
 	double middle_value;
@@ -453,26 +489,26 @@ double Point_Clustering::binary_search(vector<double>* P, double x){
 	return m;
 }
 
-double Point_Clustering::min_dist(vector<Point*>* data, int pos)
-{
-	Point* point = (*data)[pos];
-	set <int, greater <int> > :: iterator itr;
+// double Point_Clustering::min_dist(vector<Point*>* data, int pos)
+// {
+// 	Point* point = (*data)[pos];
+// 	set <int, greater <int> > :: iterator itr;
 
-	double min, cur_dist;
-	for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)
-	{
-		if ( itr == this->centers.begin() )	// If this is the first center
-		{
-			min = manhattan_dist(point, (*data)[*itr]);
-		}
-		else
-		{
-			cur_dist = manhattan_dist(point, (*data)[*itr]);
-			if ( cur_dist < min )	// If the distance from the current center is smaller
-				min = cur_dist;	
-		}
+// 	double min, cur_dist;
+// 	for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)
+// 	{
+// 		if ( itr == this->centers.begin() )	// If this is the first center
+// 		{
+// 			min = manhattan_dist(point, (*data)[*itr]);
+// 		}
+// 		else
+// 		{
+// 			cur_dist = manhattan_dist(point, (*data)[*itr]);
+// 			if ( cur_dist < min )	// If the distance from the current center is smaller
+// 				min = cur_dist;	
+// 		}
 
-	}
+// 	}
 
-	return min;
-}
+// 	return min;
+// }
