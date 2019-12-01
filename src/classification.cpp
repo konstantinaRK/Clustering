@@ -291,24 +291,34 @@ Classification_Curves::~Classification_Curves()
 template<typename vector_type, typename Function>
 void Clustering::initialization1(unsigned int cluster_num, vector<vector_type*>* data, Function dist_function)
 {
+cout << "initialization1 in" << endl;
 	std::random_device rd;  //Will be used to obtain a seed for the random number engine
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_int_distribution<> dis(0, data->size()-1);
 
     int new_center;
-	while(this->centers.size() < data->size())
+    bool append;
+
+	while(this->centers.size() < cluster_num)
 	{
 		new_center = dis(gen);
+		append = true;
+
 		// Check if its already a center or if there is a center with distance 0 from the new center
 		for (unsigned int i = 0; i < this->centers.size(); i++)
 		{
-			// Check if there is a center with distance 0 from the new center
-			if ((this->centers.at(i) == new_center) || (dist_function(data->at(this->centers.at(i)), data->at(new_center)) != 0))
+// this->distance(data->at(this->centers.at(i)), data->at(new_center));
+			if ((this->centers.at(i) == new_center) || (dist_function(data->at(this->centers.at(i)), data->at(new_center)) == 0))
 			{
-				this->centers.push_back(new_center);
+				append = false;
+				break;
 			}
 		}
-	} 
+
+		// If the new center is approved, insert in centers' set
+		if (append)	this->centers.push_back(new_center);
+	}
+cout << " initialization1 out" << endl;
 }
 
 // Class Point_Clustering functions
@@ -334,6 +344,7 @@ Point_Clustering::Point_Clustering(short int flag, int cluster_num, vector<Point
 // Class Curve_Clustering functions
 Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data) /*:Clustering(flag, cluster_num, data)*/
 {
+cout << "curves_clustering in" << endl;
 	this->flag = flag;
 
 	if (this->flag % 2 == 0)	// xx0 == Initialization 1
@@ -349,6 +360,7 @@ Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve
 	// x1x == Assign 2
 	// 0xx == Update 1
 	// 1xx == Update 2
+cout << "Curve_Clustering out" << endl;
 }
 
 void Point_Clustering::initialization2(int cluster_num, vector<Point*>* data){
@@ -512,3 +524,14 @@ double Point_Clustering::binary_search(vector<double>* P, double x)
 
 // 	return min;
 // }
+
+
+double Point_Clustering::distance(Point *c1, Point *c2)
+{
+	return manhattan_dist(c1,c2);
+}
+
+double Curve_Clustering::distance(Curve *c1, Curve *c2)
+{
+	return DTW_distance(c1,c2);
+}

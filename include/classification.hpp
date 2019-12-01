@@ -61,8 +61,11 @@ class Clustering
 		virtual void assignment1(){};
 		virtual void assignment2(){};
 		virtual void update1(){};
-		virtual void update2(){};
-	
+		virtual bool update2(){};
+		
+		// TODO  ?!
+		virtual double distance(Point *, Point *){ return 0;};
+		virtual double distance(Curve *, Curve *){ return 0;};
 };
 
 class Point_Clustering: public Clustering
@@ -77,7 +80,9 @@ class Point_Clustering: public Clustering
 		void assignment1(vector<Point*>* data);
 		void assignment2(){};
 		void update1(){};
-		void update2(){};
+		bool update2();
+
+		double distance(Point *c1, Point *c2);
 	
 };
 
@@ -91,8 +96,9 @@ class Curve_Clustering: public Clustering
 		void assignment1(){};
 		void assignment2(){};
 		void update1(){};
-		void update2(){};
+		bool update2(){};
 	
+		double distance(Curve *c1, Curve *c2);
 };
 
 #endif
