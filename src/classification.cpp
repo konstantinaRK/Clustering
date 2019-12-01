@@ -289,7 +289,7 @@ Classification_Curves::~Classification_Curves()
 // }
 
 template<typename vector_type, typename Function>
-void Clustering::initialization1(unsigned int cluster_num, vector<vector_type*>* data, Function dist_function)
+void Clustering::initialization1(unsigned int cluster_num, vector <pair <int, vector_type *>> *centers, vector<vector_type*>* data, Function dist_function)
 {
 cout << "initialization1 in" << endl;
 	std::random_device rd;  //Will be used to obtain a seed for the random number engine
@@ -299,16 +299,16 @@ cout << "initialization1 in" << endl;
     int new_center;
     bool append;
 
-	while(this->centers.size() < cluster_num)
+	while(centers->size() < cluster_num)
 	{
 		new_center = dis(gen);
 		append = true;
 
 		// Check if its already a center or if there is a center with distance 0 from the new center
-		for (unsigned int i = 0; i < this->centers.size(); i++)
+		for (unsigned int i = 0; i < centers->size(); i++)
 		{
-// this->distance(data->at(this->centers.at(i)), data->at(new_center));
-			if ((this->centers.at(i) == new_center) || (dist_function(data->at(this->centers.at(i)), data->at(new_center)) == 0))
+// this->distance(centers.at(i).second), data->at(new_center));
+			if ((centers->at(i).first == new_center) || (dist_function(centers->at(i).second, data->at(new_center)) == 0))
 			{
 				append = false;
 				break;
@@ -316,7 +316,10 @@ cout << "initialization1 in" << endl;
 		}
 
 		// If the new center is approved, insert in centers' set
-		if (append)	this->centers.push_back(new_center);
+		if (append)
+		{
+			centers->push_back(make_pair(new_center, data->at(new_center)));
+		}
 	}
 cout << " initialization1 out" << endl;
 }
@@ -328,7 +331,7 @@ Point_Clustering::Point_Clustering(short int flag, int cluster_num, vector<Point
 
 	if (this->flag % 2 == 0)	// xx0 == Initialization 1
 	{
-		this->initialization1(cluster_num, data, manhattan_dist);
+		this->initialization1(cluster_num, &(this->centers), data, manhattan_dist);
 	}
 	else	// xx1 == Initialization 2
 	{
@@ -349,7 +352,7 @@ cout << "curves_clustering in" << endl;
 
 	if (this->flag % 2 == 0)	// xx0 == Initialization 1
 	{
-		this->initialization1(cluster_num, data, DTW);
+		this->initialization1(cluster_num, &(this->centers), data, DTW);
 	}
 	else	// xx1 == Initialization 2
 	{
@@ -464,6 +467,19 @@ void Point_Clustering::assignment1(vector<Point*>* data){
 	// 	}
 	// 	this->clusters.insert(pair<int, int> (min_c, i));
 	// }
+}
+
+bool Point_Clustering::update2()
+{
+	vector <int> new_center;
+
+
+	for (unsigned int i = 0; i < this->centers.size(); i++)
+	{
+		
+	}
+
+	return true;
 }
 
 double Point_Clustering::binary_search(vector<double>* P, double x)

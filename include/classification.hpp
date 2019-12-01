@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <set>
+#include <utility>
 #include "./utilities.hpp"
 
 using namespace std;
@@ -49,19 +50,19 @@ class Classification_Curves: public Classification
 class Clustering
 {
 	protected:
-		vector <int> centers;
+		// vector <pair <int, type *>> centers;
 		short int flag;
 		multimap<int, int> clusters;
 	public:
 		// Clustering(short int flag, int cluster_num, vector<Point*>* data);
 		virtual ~Clustering(){};
 		template<typename vector_type, typename Function>
-		void initialization1(unsigned int cluster_num, vector<vector_type*>* data, Function dist_function);
+		void initialization1(unsigned int cluster_num, vector <pair <int, vector_type*>> * centers, vector<vector_type*>* data, Function dist_function);
 		virtual void initialization2(){};
 		virtual void assignment1(){};
 		virtual void assignment2(){};
 		virtual void update1(){};
-		virtual bool update2(){};
+		virtual bool update2(){ return true;};
 		
 		// TODO  ?!
 		virtual double distance(Point *, Point *){ return 0;};
@@ -71,6 +72,7 @@ class Clustering
 class Point_Clustering: public Clustering
 {
 	private:
+		vector <pair <int, Point *>> centers;
 		double binary_search(vector<double>* P, double x);
 		// double min_dist(vector<Point*>* data, int pos);
 	public:
@@ -89,6 +91,7 @@ class Point_Clustering: public Clustering
 class Curve_Clustering: public Clustering
 {
 	private:
+		vector <pair <int, Curve *>> centers;
 	public:
 		Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data);
 		// ~Curve_Clustering(){};
@@ -96,7 +99,7 @@ class Curve_Clustering: public Clustering
 		void assignment1(){};
 		void assignment2(){};
 		void update1(){};
-		bool update2(){};
+		bool update2(){ return true; };
 	
 		double distance(Curve *c1, Curve *c2);
 };
