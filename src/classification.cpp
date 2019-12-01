@@ -469,15 +469,52 @@ void Point_Clustering::assignment1(vector<Point*>* data){
 	// }
 }
 
-bool Point_Clustering::update2()
+bool Point_Clustering::update2(vector<Point*>* data)
 {
-	vector <int> new_center;
+	vector <pair <int, Point *>> new_center;
 
-
+	// For each cluster find mean vector
 	for (unsigned int i = 0; i < this->centers.size(); i++)
 	{
-		
+		int cluster_size = 0;	// If cluster is empty assign a new center found randomly
+
+		// Create mean vector
+		vector <double> mean_vector;
+		for (int i = 0; i < data->at(i)->get_dimension(); ++i)
+		{
+			mean_vector.push_back(0.0);
+		}
+
+		pair <multimap<int, int>::iterator, multimap<int, int>::iterator> range = this->clusters.equal_range(i);
+		for (multimap<int, int>::iterator it = range.first; it != range.second; ++it)
+		{
+			cluster_size++;
+			for (unsigned int i = 0; i < mean_vector.size(); ++i)
+			{
+				mean_vector.at(i) += (*data->at(it->second))[i];			
+			}
+		}
+
+		// Assign random center
+		if (cluster_size == 0)
+		{
+			/* TODO */
+		}
+		else
+		{
+			// Divide with cluster size
+			for (unsigned int i = 0; i < mean_vector.size(); ++i)
+			{
+				mean_vector.at(i) = mean_vector.at(i)/cluster_size;
+			}
+
+			new_center.push_back(make_pair(i, new Point("none", &mean_vector)));
+		}
 	}
+
+	// TODO
+	// Compare old centers with new centers
+	// If you have to continue return true else false
 
 	return true;
 }
