@@ -103,14 +103,6 @@ Classification_Points::Classification_Points(string input_file, string config, s
 		{
 			try
 			{
-				// this->clusterings.push_back(new Point_Clustering(111, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Point_Clustering(112, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Point_Clustering(121, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Point_Clustering(122, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Point_Clustering(211, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Point_Clustering(212, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Point_Clustering(221, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Point_Clustering(222, this->cluster_num, &(this->data)));
 				this->clusterings.push_back(new Point_Clustering(i, this->cluster_num, &(this->data)));
 
 			}
@@ -150,6 +142,8 @@ Classification_Curves::Classification_Curves(string input_file, string config, s
 	data.open(input_file);
 	int i = 0;
 	string line;
+	int min_d = -1;	// Min curve dimension
+	int max_d = -1;	// Max curve dimension
 	if (data.is_open())
 	{
 		getline(data, line);	// Ignore type identification line
@@ -218,10 +212,35 @@ Classification_Curves::Classification_Curves(string input_file, string config, s
 				}
 			}
 
+			if (min_d == -1 && max_d == -1)
+			{
+				min_d = this->data.at(i)->get_length();
+				max_d = this->data.at(i)->get_length();
+			}
+			else if (min_d > this->data.at(i)->get_length())
+			{
+				min_d = this->data.at(i)->get_length();
+			}
+			else if (max_d < this->data.at(i)->get_length())
+			{
+				max_d = this->data.at(i)->get_length();
+			}
+
 			i++;
 		}
 
 		data.close();
+	}
+
+	// Create grid_lsh structures
+	try
+	{
+		this->grid_lsh = new Grid_LSH(&(this->data), this->vector_htables_num, this->vector_hfunc_num, max_d, min_d);
+	}
+	catch(bad_alloc&)
+	{
+		cerr << "main: No memory available" << endl;
+		throw;
 	}
 
 	// Initialize clusterings
@@ -231,15 +250,7 @@ Classification_Curves::Classification_Curves(string input_file, string config, s
 		{
 			try
 			{
-				// this->clusterings.push_back(new Curve_Clustering(111, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Curve_Clustering(112, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Curve_Clustering(121, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Curve_Clustering(122, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Curve_Clustering(211, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Curve_Clustering(212, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Curve_Clustering(221, this->cluster_num, &(this->data)));
-				// this->clusterings.push_back(new Curve_Clustering(222, this->cluster_num, &(this->data)));
-				this->clusterings.push_back(new Curve_Clustering(i, this->cluster_num, &(this->data)));
+				this->clusterings.push_back(new Curve_Clustering(i, this->cluster_num, &(this->data), min_d, max_d));
 			}
 			catch (std::bad_alloc & ba)
 			{
@@ -253,7 +264,7 @@ Classification_Curves::Classification_Curves(string input_file, string config, s
 	{
 		try
 		{
-			this->clusterings.push_back(new Curve_Clustering(flag, this->cluster_num, &(this->data)));
+			this->clusterings.push_back(new Curve_Clustering(flag, this->cluster_num, &(this->data), min_d, max_d));
 		}
 		catch (std::bad_alloc & ba)
 		{
@@ -269,29 +280,14 @@ Classification_Curves::~Classification_Curves()
 }
 
 // Class Clustering functions
-// Clustering::Clustering(short int flag, int cluster_num, vector<Point*>* data)
-// {
-// 	this->flag = flag;
-
-	// if (this->flag % 2 == 0)	// xx0 == Initialization 1
-	// {
-		// this->initialization1(cluster_num, data);
-	// }
-	// else	// xx1 == Initialization 2
-	// {
-		// this->initialization2(cluster_num, data);
-	// }
-
-	// x0x == Assign 1
-	// x1x == Assign 2
-	// 0xx == Update 1
-	// 1xx == Update 2
-// }
+Clustering::~Clustering()
+{
+	this->clusters.clear();
+}
 
 template<typename vector_type, typename Function>
-void Clustering::initialization1(unsigned int cluster_num, vector <pair <int, vector_type *>> *centers, vector<vector_type*>* data, Function dist_function)
+void Clustering::initialization1(unsigned int cluster_num, vector <vector_type *> *centers, vector<vector_type*>* data, Function dist_function)
 {
-cout << "initialization1 in" << endl;
 	std::random_device rd;  //Will be used to obtain a seed for the random number engine
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_int_distribution<> dis(0, data->size()-1);
@@ -307,8 +303,8 @@ cout << "initialization1 in" << endl;
 		// Check if its already a center or if there is a center with distance 0 from the new center
 		for (unsigned int i = 0; i < centers->size(); i++)
 		{
-// this->distance(centers.at(i).second), data->at(new_center));
-			if ((centers->at(i).first == new_center) || (dist_function(centers->at(i).second, data->at(new_center)) == 0))
+	// this->distance(centers.at(i).second), data->at(new_center));
+			if ((dist_function(centers->at(i), data->at(new_center)) == 0))
 			{
 				append = false;
 				break;
@@ -318,10 +314,9 @@ cout << "initialization1 in" << endl;
 		// If the new center is approved, insert in centers' set
 		if (append)
 		{
-			centers->push_back(make_pair(new_center, data->at(new_center)));
+			centers->push_back(data->at(new_center));
 		}
 	}
-cout << " initialization1 out" << endl;
 }
 
 // Class Point_Clustering functions
@@ -335,17 +330,37 @@ Point_Clustering::Point_Clustering(short int flag, int cluster_num, vector<Point
 	}
 	else	// xx1 == Initialization 2
 	{
-		this->initialization2(cluster_num, data);
+		// this->initialization2(cluster_num, data);
 	}
 
-	// x0x == Assign 1
-	// x1x == Assign 2
-	// 0xx == Update 1
-	// 1xx == Update 2
+	if (this->flag < 4)	// 0xx == Update 1
+	{
+		// TODO
+	}
+	if (this->flag >= 4)	// 1xx == Update 2
+	{
+		while (update2(data))
+		{
+			// x0x == Assign 1
+			// x1x == Assign 2
+		}
+	}
+}
+
+Point_Clustering::~Point_Clustering()
+{
+	while (!this->centers.empty())
+	{
+		if (this->centers.back()->get_id().compare("none") == 0)
+		{
+			delete this->centers.back();
+		}
+		this->centers.pop_back();
+	}
 }
 
 // Class Curve_Clustering functions
-Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data) /*:Clustering(flag, cluster_num, data)*/
+Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data, int min_d, int max_d) /*:Clustering(flag, cluster_num, data)*/
 {
 cout << "curves_clustering in" << endl;
 	this->flag = flag;
@@ -359,11 +374,33 @@ cout << "curves_clustering in" << endl;
 		// this->initialization2(cluster_num, data);
 	}
 
-	// x0x == Assign 1
-	// x1x == Assign 2
-	// 0xx == Update 1
-	// 1xx == Update 2
+	
+	if (this->flag < 4)	// 0xx == Update 1
+	{
+		// TODO
+	}
+	if (this->flag >= 4)	// 1xx == Update 2
+	{
+		while (update2(data, min_d, max_d))
+		{
+			// x0x == Assign 1
+			// x1x == Assign 2
+		}
+	}
+	
 cout << "Curve_Clustering out" << endl;
+}
+
+Curve_Clustering::~Curve_Clustering()
+{
+	while (!this->centers.empty())
+	{
+		if (this->centers.back()->get_id().compare("none") == 0)
+		{
+			delete this->centers.back();
+		}
+		this->centers.pop_back();
+	}
 }
 
 void Point_Clustering::initialization2(int cluster_num, vector<Point*>* data){

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-// Point
+// Class point functions
 Point::Point(string id, vector<double>* X){
 
 	this->id = id;
@@ -29,7 +29,7 @@ double Point::operator[](unsigned int i){
 	 	return -1; 
 }
 
-// Curve
+// Class curve functions
 Curve::Curve(string id){
 	this->curve_id = id;
 }
@@ -58,6 +58,45 @@ pair<double, double> Curve::operator[](int i){
 void Curve::clear(void){
 
 	this->points.clear();
+}
+
+// Class NN functions
+NN::NN(string id, double distance, set<string>* neighbors){
+
+	this->id = id;
+	this->distance = distance;
+
+	if ( neighbors != NULL ){
+		(this->r_near_neighbors).insert((this->r_near_neighbors).end(), (*neighbors).begin(), (*neighbors).end());
+		(*neighbors).clear();
+	}
+}
+
+NN::~NN(){
+	this->r_near_neighbors.clear();
+}
+
+string NN::get_near_neighbor(int i){
+
+	if ( i<0 || (unsigned int) i >= (this->r_near_neighbors).size())
+		return "";
+	return (this->r_near_neighbors)[i];
+}
+
+unsigned int NN::r_near_neighbors_size(){
+	return (this->r_near_neighbors).size();
+}
+
+vector<string> NN::get_near_neighbors(void){
+	return this->r_near_neighbors;
+}
+
+void NN::add_neighbors(vector<string>* new_neighbors){
+
+	for (unsigned int i = 0; i < (*new_neighbors).size(); ++i)
+	{
+		(this->r_near_neighbors).push_back((*new_neighbors)[i]);
+	}
 }
 
 // Functions
@@ -295,6 +334,68 @@ double manhattan_dist(Point* x, Point* y){
 	}
 
 	return distance;
+}
+
+double average_distance(vector<Point*>* pointset){
+
+
+	int size = (*pointset).size();
+	int step = floor(sqrt(size));
+
+	int sum_d = 0;
+	NN * nearest_neighbor;
+	for (int i = 0; i < size; i+=step)	// For points in pointset
+	{
+		// Find nearest neighbor
+		nearest_neighbor = brute_force((*pointset)[i], &(*pointset));
+		sum_d += nearest_neighbor->get_distance();
+		delete nearest_neighbor;
+	}
+
+	// Return the average nearest neighbor distance
+	return sum_d/(size/step);
+}
+
+NN* brute_force(Point* point, vector<Point*>* pointset){
+
+	string min_id = "";
+	int min_distance;
+
+	int current_distance;
+	for (unsigned int i = 0; i < (*pointset).size(); ++i)	// For every point
+	{
+		if ( (point->get_id()).compare((*pointset)[i]->get_id()) != 0 )	// If the point has different id from query point
+		{
+			// Calculate the distance
+			current_distance = manhattan_dist(point, (*pointset)[i]);
+
+			// Replace min if this is the first point or if current distance < min distance
+			if ( min_id.compare("") == 0 || current_distance < min_distance )
+			{
+				min_distance = current_distance;
+				min_id = (*pointset)[i]->get_id();
+			}
+		}
+
+	}
+
+	// If i have found a nearest neighbor
+	if ( min_id.compare("") !=0 )
+	{
+		NN * nearest_neighbor;
+		try{
+			nearest_neighbor = new NN(min_id, min_distance);
+		}
+		catch(bad_alloc&)
+		{
+			cerr << "No memory available" << endl;
+			nearest_neighbor = NULL;
+		}
+
+		return nearest_neighbor;
+	}
+	else	// If there is no point except this point in the pointset
+		return NULL;
 }
 
 // πρεπει να τους αλλαξω μερος

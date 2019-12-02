@@ -5,12 +5,14 @@
 #include <set>
 #include <utility>
 #include "./utilities.hpp"
+#include "./Grid.hpp"
 
 using namespace std;
 
 class Point;
 class Curve;
 class Clustering;
+class Grid_LSH;
 
 class Classification
 {
@@ -20,17 +22,20 @@ class Classification
 		int vector_htables_num;
 		int vector_hfunc_num;
 		vector<Clustering *> clusterings;
+
 	public:
 		Classification(string config);
 		virtual ~Classification();
 		// void train();
-			
 };
 
 class Classification_Points: public Classification
 {
 	private:
 		vector <Point *> data;
+
+
+		// LSH * lsh;
 	public:
 		Classification_Points(string input_file, string config, short int flag);
 		~Classification_Points();
@@ -41,6 +46,9 @@ class Classification_Curves: public Classification
 {
 	private:
 		vector <Curve *> data;
+
+		Grid_LSH * grid_lsh;
+
 	public:
 		Classification_Curves(string input_file, string config, short int flag);
 		~Classification_Curves();
@@ -54,10 +62,9 @@ class Clustering
 		short int flag;
 		multimap<int, int> clusters;
 	public:
-		// Clustering(short int flag, int cluster_num, vector<Point*>* data);
-		virtual ~Clustering(){};
+		virtual ~Clustering();
 		template<typename vector_type, typename Function>
-		void initialization1(unsigned int cluster_num, vector <pair <int, vector_type*>> * centers, vector<vector_type*>* data, Function dist_function);
+		void initialization1(unsigned int cluster_num, vector <vector_type*> * centers, vector<vector_type*>* data, Function dist_function);
 		virtual void initialization2(){};
 		virtual void assignment1(){};
 		virtual void assignment2(){};
@@ -72,12 +79,12 @@ class Clustering
 class Point_Clustering: public Clustering
 {
 	private:
-		vector <pair <int, Point *>> centers;
+		vector <Point *> centers;
 		double binary_search(vector<double>* P, double x);
 		// double min_dist(vector<Point*>* data, int pos);
 	public:
 		Point_Clustering(short int flag, int cluster_num, vector<Point*>* data);
-		// ~Point_Clustering(){};
+		~Point_Clustering();
 		void initialization2(int cluster_num, vector<Point*>* data);
 		void assignment1(vector<Point*>* data);
 		void assignment2(){};
@@ -91,15 +98,15 @@ class Point_Clustering: public Clustering
 class Curve_Clustering: public Clustering
 {
 	private:
-		vector <pair <int, Curve *>> centers;
+		vector <Curve *> centers;
 	public:
-		Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data);
-		// ~Curve_Clustering(){};
+		Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data, int min_d, int max_d);
+		~Curve_Clustering();
 		void initialization2(){};
 		void assignment1(){};
 		void assignment2(){};
 		void update1(){};
-		bool update2(){ return true; };
+		bool update2(vector<Curve*>* data, int min_d, int max_d){ return true; };
 	
 		double distance(Curve *c1, Curve *c2);
 };
