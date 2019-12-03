@@ -9,6 +9,8 @@
 #include <bits/stdc++.h> 
 #include "./classification.hpp"
 
+#define DEBUG 1
+
 using namespace std;
 
 class Classification;
@@ -32,7 +34,8 @@ class Curve
 	public:
 		Curve(string id);
 		~Curve();
-		inline string get_id(void){ return this->curve_id; }
+		// Curve(const Curve&);
+		string get_id(void);
 		void add_point(double x, double y);
 		int get_length(void);
 		pair<double, double> operator[](int i);
@@ -81,8 +84,5 @@ NN* brute_force(Point* point, vector<Point*>* pointset);
 bool read(string file_name, vector<Point*>* points);
 bool point_proccessing(vector<Point*>* points, string p, int d = -1);
 
-
-// TODO
-double DTW(Curve *x1, Curve * x2);
 
 #endif

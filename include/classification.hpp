@@ -34,8 +34,8 @@ class Classification_Points: public Classification
 	private:
 		vector <Point *> data;
 
+		LSH * lsh;
 
-		// LSH * lsh;
 	public:
 		Classification_Points(string input_file, string config, short int flag);
 		~Classification_Points();
@@ -58,20 +58,20 @@ class Classification_Curves: public Classification
 class Clustering
 {
 	protected:
-		// vector <pair <int, type *>> centers;
+		vector <bool> mean_centers;
 		short int flag;
 		multimap<int, int> clusters;
 	public:
+		Clustering(int cluster_num);
 		virtual ~Clustering();
-		template<typename vector_type, typename Function>
-		void initialization1(unsigned int cluster_num, vector <vector_type*> * centers, vector<vector_type*>* data, Function dist_function);
+		template<typename vector_type>
+		void initialization1(unsigned int cluster_num, vector <vector_type*> * centers, vector<vector_type*>* data);
 		virtual void initialization2(){};
 		virtual void assignment1(){};
 		virtual void assignment2(){};
 		virtual void update1(){};
 		// virtual bool update2(vector<Point*>* data){ return true;};
-		
-		// TODO  ?!
+
 		virtual double distance(Point *, Point *){ return 0;};
 		virtual double distance(Curve *, Curve *){ return 0;};
 };

@@ -39,6 +39,11 @@ Curve::~Curve()
 	this->points.clear();
 }
 
+string Curve::get_id(void)
+{ 
+	return this->curve_id;
+}
+
 void Curve::add_point(double x, double y){
 
 	this->points.push_back(make_pair(x, y));
