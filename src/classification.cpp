@@ -112,15 +112,18 @@ Classification_Points::Classification_Points(string input_file, string config, s
 	if ( !read(input_file, &(this->data)) )
 		throw;
 
-	// / Create LSH ANN
-	try
+	// Create LSH ANN
+	if (flag == 0 || ((flag >> 1) % 2 == 1))
 	{
-		this->lsh = new LSH(&(this->data), this->vector_htables_num, this->vector_hfunc_num, this->data.at(0)->get_dimension());
-	}
-	catch(bad_alloc&)
-	{
-		cerr << "main: No memory_available" << endl;
-		throw;
+		try
+		{
+			this->lsh = new LSH(&(this->data), this->vector_htables_num, this->vector_hfunc_num, this->data.at(0)->get_dimension());
+		}
+		catch(bad_alloc&)
+		{
+			cerr << "main: No memory_available" << endl;
+			throw;
+		}
 	}
 
 	// Initialize clusterings
@@ -280,15 +283,18 @@ Classification_Curves::Classification_Curves(string input_file, string config, s
 	}
 
 	// Create grid_lsh structures
-	// try
-	// {
-	// 	this->grid_lsh = new Grid_LSH(&(this->data), this->vector_htables_num, this->vector_hfunc_num, max_d, min_d);
-	// }
-	// catch(bad_alloc&)
-	// {
-	// 	cerr << "main: No memory available" << endl;
-	// 	throw;
-	// }
+	if (flag == 0 || ((flag >> 1) % 2 == 1))
+	{
+		try
+		{
+			this->grid_lsh = new Grid_LSH(&(this->data), this->vector_htables_num, this->vector_hfunc_num, max_d, min_d);
+		}
+		catch(bad_alloc&)
+		{
+			cerr << "main: No memory available" << endl;
+			throw;
+		}
+	}
 
 	// Initialize clusterings
 	if (flag == 0)
