@@ -521,7 +521,17 @@ bool Point_Clustering::update2(vector<Point*>* data)
 	// For each cluster find mean vector
 	for (unsigned int i = 0; i < this->centers.size(); i++)
 	{
-		int cluster_size = 0;	// If cluster is empty assign a new center found randomly
+
+		int cluster_size = this->clusters.count(i);	// If cluster is empty assign a new center found randomly
+
+		// Assign random center
+		if (cluster_size == 0)
+		{
+			/* TODO We are using previous center. Not a random one */
+			new_centers.push_back(this->centers.at(i));
+			new_mean_centers.push_back(this->mean_centers.at(i));
+			continue;
+		}
 
 		// Create mean vector
 		vector <double> mean_vector;
@@ -533,33 +543,21 @@ bool Point_Clustering::update2(vector<Point*>* data)
 		pair <multimap<int, int>::iterator, multimap<int, int>::iterator> range = this->clusters.equal_range(i);
 		for (multimap<int, int>::iterator it = range.first; it != range.second; ++it)
 		{
-			cluster_size++;
 			for (unsigned int j = 0; j < mean_vector.size(); j++)
 			{
 				mean_vector.at(j) += (*(data->at(it->second)))[j];			
 			}
 		}
 
-		// Assign random center
-		if (cluster_size == 0)
+		// Divide with cluster size
+		for (unsigned int j = 0; j < mean_vector.size(); j++)
 		{
-			/* TODO */
-			new_centers.push_back(this->centers.at(i));
-
-			new_mean_centers.push_back(this->mean_centers.at(i));
+			mean_vector.at(j) = mean_vector.at(j)/cluster_size;
 		}
-		else
-		{
-			// Divide with cluster size
-			for (unsigned int j = 0; j < mean_vector.size(); j++)
-			{
-				mean_vector.at(j) = mean_vector.at(j)/cluster_size;
-			}
 
-			new_centers.push_back(new Point("none", &mean_vector));
+		new_centers.push_back(new Point("none", &mean_vector));
+		new_mean_centers.push_back(true);
 
-			new_mean_centers.push_back(true);
-		}
 	}
 
 	// TODO  synartisi annas
@@ -707,8 +705,23 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 		cout << "Curve_Clustering::update2 in" << endl;
 	#endif
 
+	vector <Curve *> new_centers;
+	vector <bool> new_mean_centers;
+
 	for (unsigned int cluster = 0; cluster < this->centers.size(); cluster++)
 	{
+		int cluster_size = this->clusters.count(cluster);	// If cluster is empty assign a new center found randomly
+
+		// Assign random center
+		if (cluster_size == 0)
+		{
+			/* TODO */
+			new_centers.push_back(this->centers.at(cluster));
+			new_mean_centers.push_back(this->mean_centers.at(cluster));
+			continue;
+		}
+
+
 		pair <multimap <int ,int>::iterator, multimap <int, int>::iterator> range;
     	range = this->clusters.equal_range(cluster);
 
@@ -730,12 +743,6 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 			{
 				counter++;
 			}
-		}
-
-		if (counter == 0)
-		{
-			// TODO ftiakse to kentro
-			continue;
 		}
 
 		// Find random curve of size >= mean_dim
@@ -806,16 +813,50 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 
 		delete new_mean_curve;
 
-		// TODO create new center set
+		// Add new center to dataset
+		new_centers.push_back(mean_curve);
+		new_mean_centers.push_back(true);
 	}
 
-	// TODO check if centers changed
+	// TODO  synartisi annas
+	// Compare old centers with new centers
+	// If you have to continue return true else false
+
+	// bool changed = synarthsh annas
+
+	bool changed = false;
+	for (unsigned int i = 0; i < this->centers.size(); i++)
+	{
+		if (this->centers.at(i) != new_centers.at(i))
+		{
+			changed = true;
+		}
+	}
+
+	// Replace the centers if needed
+	if (changed)
+	{
+		for (unsigned int i = 0; i < this->centers.size(); ++i)
+		{
+			// Delete non dataset centers if they have been changed
+			if (this->mean_centers.at(i) && (this->centers.at(i) != new_centers.at(i)))
+			{
+				delete this->centers.at(i);
+				this->centers.at(i) = new_centers.at(i);
+			}
+			else
+			{
+				this->centers.at(i) = new_centers.at(i);
+				this->mean_centers.at(i) = new_mean_centers.at(i);
+			}
+		}
+	}
 
 	#if DEBUG
 		cout << "Curve_Clustering::update2 out" << endl;
 	#endif
 
-	return true;
+	return changed;
 }
 
 double Curve_Clustering::distance(Curve *c1, Curve *c2)
