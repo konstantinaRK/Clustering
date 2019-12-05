@@ -165,7 +165,7 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 				return NULL;
 			}
 			flag = stoi(argv[i+1]);
-			if (flag < 0 || !(flag == 0 || flag == 111 || flag == 121 || flag == 112 || flag == 122 || flag == 211 || flag == 212 || flag == 221 || flag == 222))
+			if (flag < 0 || flag > 7)
 			{
 				cerr << "Flag must describe the combination of initialization|assignement|update" << endl;
 				return NULL;

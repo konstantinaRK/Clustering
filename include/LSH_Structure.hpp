@@ -44,6 +44,7 @@ class LSH{
 		LSH(vector<Point*>* points, int L, int k, int dimension);
 		~LSH();
 		NN* predict(Point * point, int r = 0);
+		vector <Point *> * get_bucket(Point * point);
 };
 
 #endif

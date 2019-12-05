@@ -4,6 +4,7 @@
 #include <vector>
 #include <set>
 #include <utility>
+#include <unordered_map>
 #include "./utilities.hpp"
 #include "./Grid.hpp"
 #include "./LSH_Structure.hpp"
@@ -66,11 +67,12 @@ class Clustering
 	public:
 		Clustering(int cluster_num);
 		virtual ~Clustering();
-		template<typename vector_type>
+		template <typename vector_type>
 		void initialization1(unsigned int cluster_num, vector <vector_type*> * centers, vector<vector_type*>* data);
 		virtual void initialization2(){};
 		virtual void assignment1(){};
-		virtual void assignment2(){};
+		template <typename lsh_type, typename vector_type>
+		void assignment2(lsh_type * lsh, vector <vector_type *> * data, vector <vector_type *> *centers);
 		virtual void update1(){};
 		// virtual bool update2(vector<Point*>* data){ return true;};
 
@@ -85,11 +87,10 @@ class Point_Clustering: public Clustering
 		double binary_search(vector<double>* P, double x);
 		// double min_dist(vector<Point*>* data, int pos);
 	public:
-		Point_Clustering(short int flag, int cluster_num, vector<Point*>* data);
+		Point_Clustering(short int flag, int cluster_num, vector<Point*>* data, LSH * lsh);
 		~Point_Clustering();
 		void initialization2(int cluster_num, vector<Point*>* data);
 		void assignment1(vector<Point*>* data);
-		void assignment2(){};
 		void update1(){};
 		bool update2(vector<Point*>* data);
 
@@ -102,11 +103,10 @@ class Curve_Clustering: public Clustering
 	private:
 		vector <Curve *> centers;
 	public:
-		Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data, int min_d, int max_d);
+		Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data, Grid_LSH * grid_lsh, int min_d, int max_d);
 		~Curve_Clustering();
 		void initialization2(){};
 		void assignment1(){};
-		void assignment2(){};
 		void update1(){};
 		bool update2(vector<Curve*>* data);
 	

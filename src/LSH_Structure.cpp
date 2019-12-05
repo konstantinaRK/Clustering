@@ -231,3 +231,27 @@ NN* LSH::predict(Point* point, int r){
 	else
 		return NULL;
 }
+
+
+vector <Point *> * LSH::get_bucket(Point * point)
+{
+	int L  = (this->g).size();
+
+	vector <Point *> * ret_vec = new vector <Point *> ;
+
+	for (int i = 0; i < L; ++i) // For every g
+	{
+		unsigned int key = (*(this->g[i]))[point];	// Find g value of the point
+
+		if ( (this->hash_tables)[i].find(key) != (this->hash_tables)[i].end() ) // If the key exists
+		{
+			vector<Point*> buckets_points = (this->hash_tables)[i].at(key);
+			for (unsigned int j = 0; j < buckets_points.size(); j++)
+			{
+				ret_vec->push_back(buckets_points.at(j));
+			}
+		}
+	}
+
+	return ret_vec;
+}

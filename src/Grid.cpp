@@ -59,6 +59,7 @@ pair<double, double> Grid::convert_point(pair<double, double> point){
 Grid_LSH::Grid_LSH(vector<Curve*>* curves, int L_grid, int k_vec, int max_d, int min_d){
 
 	double delta = 8*min_d/10000.0;
+	this->max_d = max_d;
 
 	// Create curveset
 	for (unsigned int i = 0; i < (*curves).size(); ++i)
@@ -187,128 +188,44 @@ NN* Grid_LSH::predict(Curve* curve, int max_d){
 
 }
 
-// Grid_Hypercube::Grid_Hypercube(vector<Curve*>* curves, unsigned int k_hypercube, unsigned int M, unsigned int probes, int L_grid, int max_d, int min_d){
+vector <Curve *> * Grid_LSH::get_bucket(Curve* curve)
+{
+	vector <Curve *> * ret_vec = new vector <Curve *>;
 
-// 	double delta = 8*min_d/1000.0;
+	Point* point;
 
-// 	// Create the curveset
-// 	for (int i = 0; i < (*curves).size(); ++i)
-// 	{
-// 		this->curveset.push_back((*curves)[i]);
-// 	}
+	for (unsigned int i = 0; i < (this->Grids).size(); ++i)	// For every grid
+	{
+		// Convert curve to point
+		vector<double> point_coord = ((this->Grids)[i])->snap(curve);
+		// Adjust dimension of point
+		int cur_d = point_coord.size();
+		for (int j = cur_d; j < this->max_d; ++j)
+		{
+			point_coord.push_back((this->snap_num)[i]);
+		}
 
-// 	// Create Grids and hypercubes
-// 	for (int i = 0; i < L_grid; ++i)
-// 	{
-// 		Grids.push_back(new Grid(delta));
+		point = new Point("0", &point_coord);
+		point_coord.clear();
 
-// 		// Convert curves to points
-// 		vector<vector<double>> points;
-// 		double max_coord = 0;
-// 		for (int j = 0; j < (this->curveset).size(); ++j)
-// 		{
-// 			points.push_back(((this->Grids)[i])->snap((this->curveset)[j], &max_coord));
-// 		}
-// 		this->snap_num.push_back(max_coord+1);
-
-// 		// Adjust dimension of points
-// 		int cur_d;
-// 		for (int j = 0; j < points.size(); ++j)
-// 		{
-// 			cur_d = points[j].size();
-// 			for (int k = cur_d; k < max_d; ++k)
-// 			{
-// 				points[j].push_back((this->snap_num)[i]);
-// 			}
-// 		}
+		if (point == NULL)
+			return NULL;
 		
-// 		// Create points
-// 		vector<Point*> pointset;
-// 		Point* point;
-// 		for (int j = 0; j < points.size(); ++j)
-// 		{
-// 			point = new Point(to_string(j), &(points[j]));
-// 			pointset.push_back(point);
-// 		}
+		// Find point's bucket
+		vector <Point *> * lsh_buck = (this->lsh)[i]->get_bucket(point);
+		if (lsh_buck == NULL){
+			delete point;
+			continue;
+		}
 
-// 		// Create a hypercube sstructure for the grid
-// 		hypercube.push_back(new Hypercube(&pointset, max_d, k_hypercube, M, probes));
-// 		pointset.clear();
-// 	}
-// }
+		// Find the curves that match the points returned by lsh
+		for (unsigned int j = 0; j < lsh_buck->size(); j++)
+		{
+			ret_vec->push_back((this->curveset)[stoi(lsh_buck->at(j)->get_id())]);
+		}
+		delete lsh_buck;
+		delete point;
+	}
 
-// Grid_Hypercube::~Grid_Hypercube(){
-
-// 	delete_vector<Hypercube>(&(this->hypercube));
-// 	this->hypercube.clear();
-// 	delete_vector<Grid>(&(this->Grids));
-// 	this->Grids.clear();
-// 	delete_vector<Curve>(&(this->curveset));
-// 	this->curveset.clear();
-// 	this->snap_num.clear();
-// }
-
-// NN* Grid_Hypercube::predict(Curve* curve, int max_d){
-// // Find nearest neighbor of a curve
-
-// 	string min_id = "";
-// 	double min_dist;
-
-// 	Point* point;
-// 	Curve* cur_curve;
-// 	double cur_dist;
-
-// 	for (int i = 0; i < (this->Grids).size(); ++i)	// FOr every Grid
-// 	{
-// 		// Convert curve to point
-// 		vector<double> point_coord = ((this->Grids)[i])->snap(curve);
-// 		int cur_d = point_coord.size();
-// 		// Adjust dimension of point
-// 		for (int j = cur_d; j < max_d; ++j)
-// 		{
-// 			point_coord.push_back((this->snap_num)[i]);
-// 		}
-
-// 		Point * point = new Point("0", &point_coord);
-// 		point_coord.clear();
-
-// 		if (point == NULL)
-// 			return NULL;
-		
-// 		// Find point's nearest neighbor
-// 		NN* nearest_neighbor = (this->hypercube)[i]->predict(point);
-// 		if (nearest_neighbor == NULL){
-// 			delete point;
-// 			continue;
-// 		}
-
-// 		// Find the actual distance between this curve and the nn point's curve
-// 		cur_curve =  (this->curveset)[stoi(nearest_neighbor->get_id())];
-// 		cur_dist = DTW_distance(curve, cur_curve);
-
-// 		if ( min_id.compare("") == 0 || cur_dist < min_dist )
-// 		{
-// 			min_id = cur_curve->get_id();
-// 			min_dist = cur_dist;
-// 		}
-
-// 		delete nearest_neighbor;
-// 		delete point;
-// 	}
-
-// 	// If i haven't found a neighbor
-// 	if ( min_id.compare("") == 0 )
-// 		return NULL;
-// 	else
-// 	{
-// 		NN* nearest_neighbor;
-// 		try{
-// 			nearest_neighbor = new NN(min_id, min_dist);
-// 		}
-// 		catch(bad_alloc&){
-// 			cerr << "grid_lsh_nearest_neighbor: No memory available" << endl;
-// 			return NULL;
-// 		}
-// 		return nearest_neighbor;
-// 	}
-// }
+	return ret_vec;
+}

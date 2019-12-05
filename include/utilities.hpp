@@ -9,7 +9,7 @@
 #include <bits/stdc++.h> 
 #include "./classification.hpp"
 
-#define DEBUG 0
+#define DEBUG 1
 
 using namespace std;
 
@@ -83,6 +83,5 @@ NN* brute_force(Point* point, vector<Point*>* pointset);
 
 bool read(string file_name, vector<Point*>* points);
 bool point_proccessing(vector<Point*>* points, string p, int d = -1);
-
 
 #endif

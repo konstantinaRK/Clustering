@@ -19,6 +19,7 @@ class Grid{
 };
 
 class Grid_LSH{
+		int max_d;	
 		vector<Curve*> curveset; 
 		vector<Grid*> Grids;
 		vector<double> snap_num;
@@ -27,6 +28,7 @@ class Grid_LSH{
 		Grid_LSH(vector<Curve*>* curves, int L_grid, int k_vec, int max_d, int min_d);
 		~Grid_LSH();
 		NN* predict(Curve* curve, int max_d);
+		vector <Curve *> * get_bucket(Curve * curve); 
 };
 
 // class Grid_Hypercube{
