@@ -6,6 +6,7 @@
 #include <utility>
 #include "./utilities.hpp"
 #include "./Grid.hpp"
+#include "./LSH_Structure.hpp"
 
 using namespace std;
 
@@ -13,6 +14,7 @@ class Point;
 class Curve;
 class Clustering;
 class Grid_LSH;
+class LSH;
 
 class Classification
 {
@@ -106,7 +108,7 @@ class Curve_Clustering: public Clustering
 		void assignment1(){};
 		void assignment2(){};
 		void update1(){};
-		bool update2(vector<Curve*>* data, int min_d, int max_d){ return true; };
+		bool update2(vector<Curve*>* data);
 	
 		double distance(Curve *c1, Curve *c2);
 };

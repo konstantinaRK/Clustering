@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <random>
+#include <time.h>
 
 // Class Classification functions
 Classification::Classification(string config)
@@ -471,65 +472,6 @@ Point_Clustering::~Point_Clustering()
 	this->centers.clear();
 }
 
-// Class Curve_Clustering functions
-Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data, int min_d, int max_d) : Clustering(cluster_num)
-{
-	#if DEBUG 
-		cout << "curves_clustering in" << endl; 
-	#endif
-
-	this->flag = flag;
-
-	if (this->flag % 2 == 0)	// xx0 == Initialization 1
-	{
-		this->initialization1(cluster_num, &(this->centers), data);
-	}
-	else	// xx1 == Initialization 2
-	{
-		// this->initialization2(cluster_num, data);
-	}
-
-	int reps = 200;	// Maximum number of updates
-	if (this->flag < 4)	// 0xx == Update 1
-	{
-		// TODO
-	}
-	if (this->flag >= 4)	// 1xx == Update 2
-	{
-		do
-		{
-			// x0x == Assign 1
-			// x1x == Assign 2
-		}
-		while (reps-- && update2(data, min_d, max_d));
-	}
-	
-	#if DEBUG
-		cout << "Curve_Clustering out" << endl;
-	#endif
-}
-
-Curve_Clustering::~Curve_Clustering()
-{
-	#if DEBUG
-		cout << "Curve_Clustering in" << endl;
-	#endif
-
-	for (unsigned int i = 0; i < this->centers.size(); i++)
-	{
-		if (this->mean_centers.at(i))
-		{
-			delete this->centers.at(i);
-		}
-	}
-	
-	this->centers.clear();
-
-	#if DEBUG
-		cout << "Curve_Clustering out" << endl;
-	#endif
-}
-
 void Point_Clustering::initialization2(int cluster_num, vector<Point*>* data){}
 
 void Point_Clustering::assignment1(vector<Point*>* data){
@@ -695,34 +637,185 @@ double Point_Clustering::binary_search(vector<double>* P, double x)
 	return m;
 }
 
-// double Point_Clustering::min_dist(vector<Point*>* data, int pos)
-// {
-// 	Point* point = (*data)[pos];
-// 	set <int, greater <int> > :: iterator itr;
-
-// 	double min, cur_dist;
-// 	for (itr = this->centers.begin(); itr != this->centers.end(); ++itr)
-// 	{
-// 		if ( itr == this->centers.begin() )	// If this is the first center
-// 		{
-// 			min = manhattan_dist(point, (*data)[*itr]);
-// 		}
-// 		else
-// 		{
-// 			cur_dist = manhattan_dist(point, (*data)[*itr]);
-// 			if ( cur_dist < min )	// If the distance from the current center is smaller
-// 				min = cur_dist;	
-// 		}
-
-// 	}
-
-// 	return min;
-// }
-
-
 double Point_Clustering::distance(Point *c1, Point *c2)
 {
 	return manhattan_dist(c1,c2);
+}
+
+// Class Curve_Clustering functions
+Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data, int min_d, int max_d) : Clustering(cluster_num)
+{
+	#if DEBUG 
+		cout << "curves_clustering in" << endl; 
+	#endif
+
+	this->flag = flag;
+
+	if (this->flag % 2 == 0)	// xx0 == Initialization 1
+	{
+		this->initialization1(cluster_num, &(this->centers), data);
+	}
+	else	// xx1 == Initialization 2
+	{
+		// this->initialization2(cluster_num, data);
+	}
+
+	int reps = 200;	// Maximum number of updates
+	if (this->flag < 4)	// 0xx == Update 1
+	{
+		// TODO
+	}
+	if (this->flag >= 4)	// 1xx == Update 2
+	{
+		do
+		{
+			// x0x == Assign 1
+			// x1x == Assign 2
+		}
+		while (reps-- && update2(data));
+	}
+	
+	#if DEBUG
+		cout << "Curve_Clustering out" << endl;
+	#endif
+}
+
+Curve_Clustering::~Curve_Clustering()
+{
+	#if DEBUG
+		cout << "Curve_Clustering in" << endl;
+	#endif
+
+	for (unsigned int i = 0; i < this->centers.size(); i++)
+	{
+		if (this->mean_centers.at(i))
+		{
+			delete this->centers.at(i);
+		}
+	}
+	
+	this->centers.clear();
+
+	#if DEBUG
+		cout << "Curve_Clustering out" << endl;
+	#endif
+}
+
+bool Curve_Clustering::update2(vector<Curve*>* data)
+{
+	#if DEBUG
+		cout << "Curve_Clustering::update2 in" << endl;
+	#endif
+
+	for (unsigned int cluster = 0; cluster < this->centers.size(); cluster++)
+	{
+		pair <multimap <int ,int>::iterator, multimap <int, int>::iterator> range;
+    	range = this->clusters.equal_range(cluster);
+
+		// Calculate mean size of curve in cluster (λ)
+		int mean_dim = 0;
+		for (multimap<int,int>::iterator it=range.first; it!=range.second; ++it)
+		{
+			mean_dim += data->at(it->second)->get_length();
+		}
+		if (this->clusters.count(cluster))
+		{
+			mean_dim = mean_dim/this->clusters.count(cluster);	
+		}
+
+		int counter = 0;	// How many curves have size >= mean_dim
+		for (multimap<int,int>::iterator it=range.first; it!=range.second; ++it)
+		{
+			if (data->at(it->second)->get_length())
+			{
+				counter++;
+			}
+		}
+
+		if (counter == 0)
+		{
+			// TODO ftiakse to kentro
+			continue;
+		}
+
+		// Find random curve of size >= mean_dim
+		random_device rd;  //Will be used to obtain a seed for the random number engine
+    	mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    	uniform_int_distribution<> dis(0, counter-1);
+		int random_curve = dis(gen);
+		int random_curve_pos;
+		for (multimap<int,int>::iterator it=range.first; it!=range.second && random_curve > 0; ++it)
+		{
+			if (data->at(it->second)->get_length() >= mean_dim)
+			{
+				random_curve--;
+				random_curve_pos = it->second;
+			}
+		}
+
+		// Create the curve for the algorithm
+		Curve * mean_curve = NULL;
+		Curve * new_mean_curve = new Curve("");
+		int start_point = 0;
+		// If random curve is bigger than mean_dim, choose a random section of size mean_dim
+		if (data->at(random_curve_pos)->get_length() > mean_dim)
+		{
+			srand(time(NULL));
+			start_point = rand() % (data->at(random_curve_pos)->get_length() - mean_dim); 
+		}
+		for (int i = 0; i < mean_dim; ++i)
+		{
+			new_mean_curve->add_point((*(data->at(random_curve_pos)))[start_point+i].first, (*(data->at(random_curve_pos)))[start_point+i].second);
+		}
+
+		do
+		{
+			delete mean_curve;
+			mean_curve = new_mean_curve;
+
+			vector <pair <double, double>> * A = new vector <pair <double, double>>	 [mean_dim];
+			for (multimap<int,int>::iterator it=range.first; it!=range.second; ++it)
+			{
+				vector <pair <int, int>> opt_trav;
+				DTW_distance(mean_curve, data->at(it->second), &opt_trav);
+				for (unsigned int i = 0; i < opt_trav.size(); ++i)
+				{
+					A[opt_trav.at(i).first -1].push_back((*(data->at(it->second)))[opt_trav.at(i).second -1]); 
+				}
+			}
+
+			// Calculate mean and create new Curve (C)
+			new_mean_curve = new Curve("");
+			for (int i = 0; i < mean_dim; i++)
+			{
+				double x = 0, y = 0;
+				for (unsigned int j = 0; j < A[i].size(); j++)
+				{
+				  	x += A[i].at(j).first;
+				  	y += A[i].at(j).second;
+				}
+				if (A[i].size() > 0)
+				{
+					x = x/A[i].size();
+					y = x/A[i].size();
+				}
+				new_mean_curve->add_point(x, y);
+			}
+
+		} while (DTW_distance(mean_curve, new_mean_curve) == 0);
+
+		delete new_mean_curve;
+
+		// TODO create new center set
+	}
+
+	// TODO check if centers changed
+
+	#if DEBUG
+		cout << "Curve_Clustering::update2 out" << endl;
+	#endif
+
+	return true;
 }
 
 double Curve_Clustering::distance(Curve *c1, Curve *c2)
