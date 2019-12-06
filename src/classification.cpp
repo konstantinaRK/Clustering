@@ -333,7 +333,7 @@ Classification_Curves::Classification_Curves(string input_file, string output_fi
 	// Initialize clusterings
 	if (flag == 8)
 	{
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 8; i++)
 		{
 			try
 			{
@@ -1245,8 +1245,8 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 
 		// Find random curve of size >= mean_dim
 		random_device rd;  //Will be used to obtain a seed for the random number engine
-    mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    uniform_int_distribution<int> dis(0, counter-1);
+    	mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    	uniform_int_distribution<int> dis(0, counter-1);
 		int random_curve = dis(gen);
 		int random_curve_pos;
 		for (multimap<int,int>::iterator it=range.first; it!=range.second; ++it)
