@@ -1,8 +1,16 @@
 CC = g++
 CFLAGS = -Wall
 
+all: main ./test/tests
+
 main: ./build/cluster.o ./build/utilities.o ./build/classification.o ./build/Grid.o ./build/LSH_Structure.o
 	$(CC) -o ./bin/cluster ./build/cluster.o ./build/utilities.o ./build/classification.o ./build/Grid.o ./build/LSH_Structure.o
+
+./test/tests: ./tests.o ./build/utilities.o ./build/classification.o ./build/Grid.o ./build/LSH_Structure.o
+	g++ ./tests.o ./build/utilities.o ./build/classification.o ./build/Grid.o ./build/LSH_Structure.o -o ./test/tests -Wall -g -pthread -lgtest_main -lgtest -lpthread
+
+./tests.o: ./test/tests.cpp
+	g++ -Wall -g -pthread -lgtest_main -lgtest -lpthread -std=c++11 -c ./test/tests.cpp
 
 # Main code
 ./build/cluster.o: ./src/cluster.cpp
@@ -23,4 +31,4 @@ main: ./build/cluster.o ./build/utilities.o ./build/classification.o ./build/Gri
 
 # Clean
 clean:
-	-rm ./bin/* ./build/*
+	rm ./bin/* ./test/tests ./tests.o
