@@ -1144,7 +1144,9 @@ Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve
 		do
 		{
 			if ( (this->flag>>1)%2 == 0 )
+			{
 				this->assignment1<Curve>(&this->centers, data);
+			}
 			else
 			{
 				this->assignment2(grid_lsh, data, &(this->centers));
@@ -1158,11 +1160,11 @@ Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve
 		{
 			if ((this->flag >> 1) % 2 == 0)	// x0x == Assign 1
 			{
-				this->assignment2(grid_lsh, data, &(this->centers));
+				this->assignment1<Curve>(&this->centers, data);
 			}
 			else	// x1x == Assign 2
 			{
-				assignment2(grid_lsh, data, &(this->centers));
+				this->assignment2(grid_lsh, data, &(this->centers));
 			}
 		}
 		while (reps-- && update2(data));
