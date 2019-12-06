@@ -116,7 +116,7 @@ Classification_Points::Classification_Points(string input_file, string output_fi
 		throw;
 
 	// Create LSH ANN
-	if (flag == 0 || ((flag >> 1) % 2 == 1))
+	if (flag == 8 || ((flag >> 1) % 2 == 1))
 	{
 		try
 		{
@@ -140,7 +140,7 @@ Classification_Points::Classification_Points(string input_file, string output_fi
 
 
 	// Initialize clusterings
-	if (flag == 0)
+	if (flag == 8)
 	{
 		for (int i = 0; i < 8; i++)
 		{
@@ -308,7 +308,7 @@ Classification_Curves::Classification_Curves(string input_file, string output_fi
 	}
 
 	// Create grid_lsh structures
-	if (flag == 0 || ((flag >> 1) % 2 == 1))
+	if (flag == 8 || ((flag >> 1) % 2 == 1))
 	{
 		try
 		{
@@ -331,7 +331,7 @@ Classification_Curves::Classification_Curves(string input_file, string output_fi
 	myfile.close();
 
 	// Initialize clusterings
-	if (flag == 0)
+	if (flag == 8)
 	{
 		for (int i = 0; i < 4; i++)
 		{
@@ -885,7 +885,7 @@ Point_Clustering::Point_Clustering(short int flag, int cluster_num, vector<Point
 		this->initialization2<Point>(cluster_num, &this->centers, data);
 	}
 
-	int reps = 50;	// Maximum number of updates
+	int reps = 100;	// Maximum number of updates
 	if (this->flag < 4)	// 0xx == Update 1
 	{
 		do
@@ -998,7 +998,7 @@ bool Point_Clustering::update2(vector<Point*>* data)
 	bool changed = false;
 	for (unsigned int i = 0; i < this->centers.size(); i++)
 	{
-		if (new_centers.at(i) != NULL && (this->distance(this->centers.at(i), new_centers.at(i)) >1))
+		if (new_centers.at(i) != NULL && (this->distance(this->centers.at(i), new_centers.at(i)) >0.1))
 		{
 			changed = true;
 		}
@@ -1325,7 +1325,7 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 	bool changed = false;
 	for (unsigned int i = 0; i < this->centers.size(); i++)
 	{
-		if (new_centers.at(i) != NULL && (this->distance(this->centers.at(i), new_centers.at(i)) >1))
+		if (new_centers.at(i) != NULL && (this->distance(this->centers.at(i), new_centers.at(i)) >0.00001))
 		{
 			changed = true;
 		}

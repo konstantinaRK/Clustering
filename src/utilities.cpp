@@ -109,7 +109,7 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 {
 	string data_file = "";
 	string config = "";
-	short int flag = 0;
+	short int flag = 8;
 
 	*output_file = "";
 	*complete = false;
