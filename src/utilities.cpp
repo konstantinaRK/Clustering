@@ -109,7 +109,7 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 {
 	string data_file = "";
 	string config = "";
-	short int flag = 0;
+	short int flag = 8;
 
 	*output_file = "";
 	*complete = false;
@@ -165,7 +165,7 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 				return NULL;
 			}
 			flag = stoi(argv[i+1]);
-			if (flag < 0 || !(flag == 0 || flag == 111 || flag == 121 || flag == 112 || flag == 122 || flag == 211 || flag == 212 || flag == 221 || flag == 222))
+			if (flag < 0 || flag > 8)
 			{
 				cerr << "Flag must describe the combination of initialization|assignement|update" << endl;
 				return NULL;
@@ -199,7 +199,9 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 		{
 			return_value = new Classification_Points(data_file, (*output_file), config, flag, (*complete));
 		}
-		catch (const std::invalid_argument& ia){}
+		catch (const std::invalid_argument& ia){
+			cerr << "Wrong config file name." << endl;
+		}
 	}
 	else if(!line.compare(0, 6, "curves"))
 	{
@@ -207,7 +209,9 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 		{
 			return_value = new Classification_Curves(data_file, (*output_file), config, flag, (*complete));
 		}
-		catch (const std::invalid_argument& ia){}
+		catch (const std::invalid_argument& ia){
+			cerr << "Wrong config file name." << endl;
+		}
 	}
 
 	return return_value;
@@ -411,7 +415,42 @@ NN* brute_force(Point* point, vector<Point*>* pointset){
 		return NULL;
 }
 
-// πρεπει να τους αλλαξω μερος
+double binary_search(vector<double>* P, double x){
+
+	if ( P == NULL )
+		return -1;
+
+	int l = 0, h = (*P).size()-1, m;
+	double middle_value;
+
+	// Corner case
+	if ( x == (*P)[h] )
+		return h;
+
+	// Binary search
+	while ( l < h )
+	{
+
+		m = (h+l)/2;
+		middle_value = (*P)[m];
+		if ( middle_value == x )
+			return m;
+		else if ( x < middle_value )
+		{
+			if ( m > 0 && x > (*P)[m-1]) 	// If this is not the first element and P[m-1] < x < P[m]
+                return m;
+			h = m;		// Choose the left half
+		}
+		else
+		{
+			if ( m < (int)((*P).size()-1) && x < (*P)[m+1] )	// If this is not the last element and P[m] < x < P[m+1]
+                return m+1;
+			l = m + 1;	// Choose the right half
+		}
+	}
+
+	return m;
+}
 
 // Read points from a file
 bool read(string file_name, vector<Point*>* points){

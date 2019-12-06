@@ -64,8 +64,6 @@ class Clustering
 		short int flag;
 		multimap<int, int> clusters;
 
-		double binary_search(vector<double>* P, double x);
-
 		template<class D>
 		double min_dist(vector<D*>* data, vector<D*>* centers, int pos);
 
@@ -100,7 +98,6 @@ class Clustering
 		virtual double distance(Point *, Point *){return 0;};
 		virtual double distance(Curve *, Curve *){return 0;};
 
-		// Και αυτα νομιζω οτι πρεπει να τα κανω με template
 		virtual void write_output(string output_file, double time, bool optional, bool means, vector<Point*>* data){};
 		virtual void write_output(string output_file, double time, bool optional, bool means, vector<Curve*>* data){};
 

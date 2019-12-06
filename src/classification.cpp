@@ -425,40 +425,6 @@ Clustering::~Clustering()
 	#endif
 }
 
-double Clustering::binary_search(vector<double>* P, double x){
-
-	int l = 0, h = (*P).size()-1, m;
-	double middle_value;
-
-	// Corner case
-	if ( x == (*P)[h] )
-		return h;
-
-	// Binary search
-	while ( l < h )
-	{
-
-		m = (h+l)/2;
-		middle_value = (*P)[m];
-		if ( middle_value == x )
-			return m;
-		else if ( x < middle_value )
-		{
-			if ( m > 0 && x > (*P)[m-1]) 	// If this is not the first element and P[m-1] < x < P[m]
-                return m;
-			h = m;		// Choose the left half
-		}
-		else
-		{
-			if ( m < (int)((*P).size()-1) && x < (*P)[m+1] )	// If this is not the last element and P[m] < x < P[m+1]
-                return m+1;
-			l = m + 1;	// Choose the right half
-		}
-	}
-
-	return m;
-}
-
 template<class D>
 double Clustering::min_dist(vector<D*>* data, vector<D*>* centers, int pos){
 
@@ -543,9 +509,9 @@ double Clustering::Cluster_Silhouette(vector<D*>* data, vector<D*>* centers, int
 
 	int cluster_size = 0;
 
-	for (auto itr = ret.first; itr != ret.second ; ++itr)
+	for (auto itr = ret.first; itr != ret.second ; ++itr)	// For every data in cluster
 	{
-		int sec_cen = calc_2min_cen<D>((*data)[itr->second], centers);
+		int sec_cen = calc_2min_cen<D>((*data)[itr->second], centers);	// Find second closest center
 		double a_i= cluster_dist<D>((*data)[itr->second], itr->first, data);
 		double b_i = cluster_dist<D>((*data)[itr->second], sec_cen, data);
 		(b_i > a_i)?(S+=(b_i - a_i)/b_i):(S+=(b_i - a_i)/a_i);
@@ -642,7 +608,7 @@ void Clustering::initialization2(int cluster_num, vector<D*>* centers, vector<D*
     	uniform_real_distribution<> dis(0.0, P[P.size()-1]/1.0);
 
     	double x = dis(gen);
-   		int r = this->binary_search(&P, x);	// P(r-1) < x <= P(r)
+   		int r = binary_search(&P, x);	// P(r-1) < x <= P(r)
 
    		int c_num = 0;
 
@@ -720,14 +686,7 @@ void Clustering::assignment1(vector<D*>* centers, vector<D*>* data){
 	}
 
 	#if DEBUG
-	// // Print clusters
-	// multimap <int, int> :: iterator itr;
-	// for (itr = this->clusters.begin(); itr != this->clusters.end(); ++itr)
-	//     {
-	//         cout << '\t' << itr->first
-	//              << '\t' << itr->second << '\n';
-	//     }
-	cout << "end of assignment1" << endl;
+		cout << "end of assignment1" << endl;
 	#endif
 }
 
@@ -885,7 +844,7 @@ Point_Clustering::Point_Clustering(short int flag, int cluster_num, vector<Point
 		this->initialization2<Point>(cluster_num, &this->centers, data);
 	}
 
-	int reps = 100;	// Maximum number of updates
+	int reps = 30;	// Maximum number of updates
 	if (this->flag < 4)	// 0xx == Update 1
 	{
 		do
@@ -961,7 +920,6 @@ bool Point_Clustering::update2(vector<Point*>* data)
 		// Assign random center
 		if (cluster_size == 0)
 		{
-			/* TODO We are using previous center. Not a random one */
 			new_centers.push_back(NULL);
 			new_mean_centers.push_back(false);
 			continue;
@@ -993,8 +951,6 @@ bool Point_Clustering::update2(vector<Point*>* data)
 		new_mean_centers.push_back(true);
 	}
 
-	// bool changed = this->centers_changed<Point>(&new_centers, &(this->centers), data);
-
 	bool changed = false;
 	for (unsigned int i = 0; i < this->centers.size(); i++)
 	{
@@ -1004,7 +960,6 @@ bool Point_Clustering::update2(vector<Point*>* data)
 		}
 	}
 
-	// Δεν εχω καταλαβει γιατι το κανεις αυτο
 	// Replace the centers if needed
 	if (changed)
 	{
@@ -1138,7 +1093,7 @@ Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve
 		this->initialization2<Curve>(cluster_num, &this->centers, data);
 	}
 
-	int reps = 100;	// Maximum number of updates
+	int reps = 30;	// Maximum number of updates
 	if (this->flag < 4)	// 0xx == Update 1
 	{
 		do
@@ -1216,7 +1171,6 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 		// Assign random center
 		if (cluster_size == 0)
 		{
-			/* TODO */
 			new_centers.push_back(NULL);
 			continue;
 		}
@@ -1246,7 +1200,7 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 		// Find random curve of size >= mean_dim
 		random_device rd;  //Will be used to obtain a seed for the random number engine
     	mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    	uniform_int_distribution<int> dis(0, counter-1);
+    	uniform_int_distribution<int> dis(1, counter);
 		int random_curve = dis(gen);
 		int random_curve_pos;
 		for (multimap<int,int>::iterator it=range.first; it!=range.second; ++it)
@@ -1260,6 +1214,7 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 			if (random_curve == 0) break;
 		}
 
+if (data->at(random_curve_pos)->get_length() < mean_dim)cout << data->at(random_curve_pos)->get_length() << " " << mean_dim << endl;
 		// Create the curve for the algorithm
 		Curve * mean_curve = NULL;
 		Curve * new_mean_curve = new Curve("none");
@@ -1318,12 +1273,6 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 		new_centers.push_back(mean_curve);
 	}
 
-	// TODO  synartisi annas
-	// Compare old centers with new centers
-	// If you have to continue return true else false
-
-	// bool changed = synarthsh annas
-
 	bool changed = false;
 	for (unsigned int i = 0; i < this->centers.size(); i++)
 	{
@@ -1332,8 +1281,6 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 			changed = true;
 		}
 	}
-
-	// bool changed = this->centers_changed<Curve>(&new_centers, &(this->centers), data);
 
 	// Replace the centers if needed
 	if (changed)

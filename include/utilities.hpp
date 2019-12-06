@@ -82,6 +82,8 @@ double manhattan_dist(Point* x, Point* y);
 double average_distance(vector<Point*>* pointset);
 NN* brute_force(Point* point, vector<Point*>* pointset);
 
+double binary_search(vector<double>* P, double x);
+
 bool read(string file_name, vector<Point*>* points);
 bool point_proccessing(vector<Point*>* points, string p, int d = -1);
 
