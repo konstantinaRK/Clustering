@@ -26,7 +26,7 @@ double Point::operator[](unsigned int i){
 	 if ( i>=0 && i<this->X.size() )
 	 	return this->X[i];
 	 else
-	 	return -1; 
+	 	return -1;
 }
 
 // Class curve functions
@@ -40,7 +40,7 @@ Curve::~Curve()
 }
 
 string Curve::get_id(void)
-{ 
+{
 	return this->curve_id;
 }
 
@@ -195,7 +195,7 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 	data.close();
 	if (!line.compare(0, 7, "vectors"))
 	{
-		try 
+		try
 		{
 			return_value = new Classification_Points(data_file, config, flag);
 		}
@@ -203,7 +203,7 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 	}
 	else if(!line.compare(0, 6, "curves"))
 	{
-		try 
+		try
 		{
 			return_value = new Classification_Curves(data_file, config, flag);
 		}
@@ -265,22 +265,23 @@ double DTW_distance(Curve* x1, Curve* x2, vector<pair<int, int>>* opt_trav){
 		// Find optimal traversal
 		string direction;
 		pair<int, int> pos;
-		pos.first = m1;
-		pos.second = m2;
+		pos.first = m1-1;
+		pos.second = m2-1;
 		while ( pos.first!=0 && pos.second!=0 )
 		{
 			(*opt_trav).push_back(pos);
 			direction = C[pos.first][pos.second].second;
 			if ( direction.compare("left") == 0 )
-				pos.first--;
+				pos.second--;
 			else if ( direction.compare("diag") == 0 )
 			{
 				pos.first--;
 				pos.second--;
 			}
 			else // direction = up
-				pos.second--;
+				pos.first--;
 		}
+		(*opt_trav).push_back(pos);
 		reverse((*opt_trav).begin(),(*opt_trav).end());
 	}
 
@@ -295,7 +296,6 @@ double DTW_distance(Curve* x1, Curve* x2, vector<pair<int, int>>* opt_trav){
 
 }
 
-
 double min(double x, double y, double z, string* direction){
 
 	double min = x;
@@ -306,10 +306,10 @@ double min(double x, double y, double z, string* direction){
 	}
 	else if ( z < min )
 	{
-		(*direction) = "up";
+		(*direction) = "left";
 		return z;
 	}
-	(*direction) = "left";
+	(*direction) = "up";
 	return min;
 }
 
@@ -335,7 +335,7 @@ double manhattan_dist(Point* x, Point* y){
 		if ( d >= 0 )
 			distance += d;
 		else
-			distance += yi - xi; 
+			distance += yi - xi;
 	}
 
 	return distance;
@@ -475,7 +475,7 @@ bool point_proccessing(vector<Point*>* points, string p, int d){
 	}
 	catch(std::bad_alloc&) {
 		cerr << "No memory available" << endl;
-		return false;   
+		return false;
 	}
 	X.clear();
 

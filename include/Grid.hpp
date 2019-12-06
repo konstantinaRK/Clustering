@@ -14,13 +14,13 @@ class Grid{
 		vector<double> a;	// beginning of the grid
 		pair<double, double> convert_point(pair<double, double>);
 	public:
-		Grid(double delta);	
+		Grid(double delta);
 		vector<double> snap(Curve* c, double* max = NULL);
 };
 
 class Grid_LSH{
-		int max_d;	
-		vector<Curve*> curveset; 
+		int max_d;
+		vector<Curve*> curveset;
 		vector<Grid*> Grids;
 		vector<double> snap_num;
 		vector<LSH*> lsh;
@@ -28,7 +28,7 @@ class Grid_LSH{
 		Grid_LSH(vector<Curve*>* curves, int L_grid, int k_vec, int max_d, int min_d);
 		~Grid_LSH();
 		NN* predict(Curve* curve, int max_d);
-		vector <Curve *> * get_bucket(Curve * curve); 
+		vector <Curve *> * get_bucket(Curve * curve);
 };
 
 // class Grid_Hypercube{

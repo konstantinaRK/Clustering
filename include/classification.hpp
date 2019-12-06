@@ -42,7 +42,7 @@ class Classification_Points: public Classification
 	public:
 		Classification_Points(string input_file, string config, short int flag);
 		~Classification_Points();
-	
+
 };
 
 class Classification_Curves: public Classification
@@ -55,7 +55,7 @@ class Classification_Curves: public Classification
 	public:
 		Classification_Curves(string input_file, string config, short int flag);
 		~Classification_Curves();
-	
+
 };
 
 class Clustering
@@ -95,7 +95,7 @@ class Point_Clustering: public Clustering
 		bool update2(vector<Point*>* data);
 
 		double distance(Point *c1, Point *c2);
-	
+
 };
 
 class Curve_Clustering: public Clustering
@@ -109,7 +109,7 @@ class Curve_Clustering: public Clustering
 		void assignment1(){};
 		void update1(){};
 		bool update2(vector<Curve*>* data);
-	
+
 		double distance(Curve *c1, Curve *c2);
 };
 
