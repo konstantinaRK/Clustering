@@ -168,7 +168,7 @@ Classification_Points::Classification_Points(string input_file, string output_fi
 			this->clusterings.push_back(new Point_Clustering(flag, this->cluster_num, &(this->data), this->lsh));
 			auto stop = high_resolution_clock::now();
 			auto duration =  duration_cast<seconds>(stop - start);
-			// this->clusterings[this->clusterings.size()]->write_output(output_file, duration.count(), complete, (flag>=4), &(this->data));
+			this->clusterings[this->clusterings.size()-1]->write_output(output_file, duration.count(), complete, (flag>=4), &(this->data));
 		}
 		catch (std::bad_alloc & ba)
 		{
@@ -359,7 +359,7 @@ Classification_Curves::Classification_Curves(string input_file, string output_fi
 			this->clusterings.push_back(new Curve_Clustering(flag, this->cluster_num, &(this->data), this->grid_lsh, min_d, max_d));
 			auto stop = high_resolution_clock::now();
 			auto duration =  duration_cast<seconds>(stop - start);
-			this->clusterings[this->clusterings.size()]->write_output(output_file, duration.count(), complete, (flag>=4), &(this->data));
+			this->clusterings[this->clusterings.size() -1]->write_output(output_file, duration.count(), complete, (flag>=4), &(this->data));
 		}
 		catch (std::bad_alloc & ba)
 		{

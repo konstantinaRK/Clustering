@@ -15,9 +15,8 @@ int main(int argc, char * argv [])
 	{
 		return 1;
 	}
-cout << "lalaal" << endl;
+
 	delete classification;
-cout << "yoyoyo" << endl;
 
 	return 0;
 }
