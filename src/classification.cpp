@@ -128,6 +128,10 @@ Classification_Points::Classification_Points(string input_file, string output_fi
 			throw;
 		}
 	}
+	else
+	{
+		this->lsh = NULL;
+	}
 
 	// Erase previous data of file
 	ofstream myfile;
@@ -137,7 +141,7 @@ Classification_Points::Classification_Points(string input_file, string output_fi
 
 	// Initialize clusterings
 	if (flag == 0)
-	{	
+	{
 		for (int i = 0; i < 8; i++)
 		{
 			try
@@ -154,6 +158,7 @@ Classification_Points::Classification_Points(string input_file, string output_fi
 				throw;
 			}
 		}
+
 	}
 	else
 	{
@@ -184,9 +189,14 @@ Classification_Points::~Classification_Points()
 		cout << "~Classification_Points in" << endl;
 	#endif
 
-	this->data.clear();	// No need to delete points. They are going to be deleted by lsh
-
-	delete this->lsh;
+	if (this->lsh == NULL) {
+		delete_vector<Point>(&this->data);
+	}
+	else
+	{
+		this->data.clear();	// No need to delete points. They are going to be deleted by lsh
+		delete this->lsh;
+	}
 
 	#if DEBUG
 		cout << "~Classification_Points out" << endl;
@@ -244,7 +254,7 @@ Classification_Curves::Classification_Curves(string input_file, string output_fi
 			while (!line.empty())
 			{
 				// Find coordinate x
-				pos1 = line.find("("); 
+				pos1 = line.find("(");
 				if (pos1 < 0) break;
 				pos2 = line.find(",");
 				sub = line.substr(pos1 + 1, pos2 - pos1 - 1);
@@ -255,7 +265,7 @@ Classification_Curves::Classification_Curves(string input_file, string output_fi
 
 				// Find coordinate y
 				pos2 = line.find(")");
-				sub = line.substr(0, pos2); 
+				sub = line.substr(0, pos2);
 				y = stod(sub);
 
 				// Move line
@@ -310,6 +320,10 @@ Classification_Curves::Classification_Curves(string input_file, string output_fi
 			throw;
 		}
 	}
+	else
+	{
+		this->grid_lsh = NULL;
+	}
 
 	// Erase previous data of file
 	ofstream myfile;
@@ -345,7 +359,7 @@ Classification_Curves::Classification_Curves(string input_file, string output_fi
 			this->clusterings.push_back(new Curve_Clustering(flag, this->cluster_num, &(this->data), this->grid_lsh, min_d, max_d));
 			auto stop = high_resolution_clock::now();
 			auto duration =  duration_cast<seconds>(stop - start);
-			this->clusterings[this->clusterings.size()-1]->write_output(output_file, duration.count(), complete, (flag>=4), &(this->data));
+			this->clusterings[this->clusterings.size() -1]->write_output(output_file, duration.count(), complete, (flag>=4), &(this->data));
 		}
 		catch (std::bad_alloc & ba)
 		{
@@ -365,9 +379,14 @@ Classification_Curves::~Classification_Curves()
 		cout << "~Classification_Curves in" << endl;
 	#endif
 
-	this->data.clear();	// No need to delete curves. They are going to be deleted by lsh
-	
-	delete this->grid_lsh;
+	if (this->grid_lsh == NULL) {
+		delete_vector<Curve>(&this->data);
+	}
+	else
+	{
+		this->data.clear();	// No need to delete points. They are going to be deleted by lsh
+		delete this->grid_lsh;
+	}
 
 	#if DEBUG
 		cout << "~Classification_Curves in" << endl;
@@ -410,7 +429,7 @@ double Clustering::binary_search(vector<double>* P, double x){
 
 	int l = 0, h = (*P).size()-1, m;
 	double middle_value;
-		
+
 	// Corner case
 	if ( x == (*P)[h] )
 		return h;
@@ -426,7 +445,7 @@ double Clustering::binary_search(vector<double>* P, double x){
 		else if ( x < middle_value )
 		{
 			if ( m > 0 && x > (*P)[m-1]) 	// If this is not the first element and P[m-1] < x < P[m]
-                return m; 
+                return m;
 			h = m;		// Choose the left half
 		}
 		else
@@ -450,7 +469,7 @@ double Clustering::min_dist(vector<D*>* data, vector<D*>* centers, int pos){
 	{
 		cur_dist = this->distance(d, (*centers)[i]);
 		if ( cur_dist < min )	// If the distance from the current center is smaller
-			min = cur_dist;	
+			min = cur_dist;
 	}
 
 	return min;
@@ -461,10 +480,10 @@ bool Clustering::centers_changed(vector<D*>* old_centers,vector<D*>* cur_centers
 
 	double distance = 0;
 	for (unsigned int i = 0; i < (*cur_centers).size(); ++i)
-	{	
+	{
 		distance += this->distance((*old_centers)[i], (*cur_centers)[i]);
 	}
-// cout << "centers_changed distance is " << distance << "....................." << endl;
+
 	return distance > 0.1;
 }
 
@@ -472,7 +491,7 @@ template<class D>
 int Clustering::calc_2min_cen(D* d, vector<D*>* centers){
 
 	int min = -1, second_min = -1;
-	double cur_dist, min_dist, second_min_dist;
+	double cur_dist, min_dist = 0, second_min_dist = 0;
 	for (unsigned int i = 0; i < (*centers).size(); ++i)
 	{
 		if ( min == -1 )
@@ -480,13 +499,8 @@ int Clustering::calc_2min_cen(D* d, vector<D*>* centers){
 			min_dist = this->distance(d, (*centers)[i]);
 			min = i;
 		}
-		else if ( second_min == -1 )
-		{
-			second_min_dist = this->distance(d, (*centers)[i]);
-			second_min = i;
-		}
 		else
-		{	
+		{
 			cur_dist = this->distance(d, (*centers)[i]);
 			if ( cur_dist < min_dist )
 			{
@@ -495,7 +509,7 @@ int Clustering::calc_2min_cen(D* d, vector<D*>* centers){
 				min_dist = cur_dist;
 				min = i;
 			}
-			else if ( cur_dist < second_min_dist )
+			else if ( (second_min == -1) || (cur_dist < second_min_dist) )
 			{
 				second_min_dist = cur_dist;
 				second_min = i;
@@ -525,7 +539,7 @@ double Clustering::Cluster_Silhouette(vector<D*>* data, vector<D*>* centers, int
 	double S = 0;
 
 	pair <multimap<int,int>::iterator, multimap<int,int>::iterator> ret;
-	ret = (this->clusters).equal_range(cluster_num);	
+	ret = (this->clusters).equal_range(cluster_num);
 
 	int cluster_size = 0;
 
@@ -537,6 +551,7 @@ double Clustering::Cluster_Silhouette(vector<D*>* data, vector<D*>* centers, int
 		(b_i > a_i)?(S+=(b_i - a_i)/b_i):(S+=(b_i - a_i)/a_i);
 		cluster_size++;
 	}
+
 	if ( cluster_size!=0 )
 		return S/cluster_size;
 	else
@@ -586,17 +601,16 @@ void Clustering::initialization1(unsigned int cluster_num, vector <vector_type *
 
 template<class D>
 void Clustering::initialization2(int cluster_num, vector<D*>* centers, vector<D*>* data){
-
-cout << "initialization2" << endl;
+	#if DEBUG
+		cout << "initialization2" << endl;
+	#endif
 	int data_size = data->size();
 
-// cout << "\ncluster_num is " << cluster_num << endl;
-
 	random_device rd;  //Will be used to obtain a seed for the random number engine
-    mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    uniform_int_distribution<> dis(0, data_size-1);
+  mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+  uniform_int_distribution<> dis(0, data_size-1);
 
-    vector<int> centers_ids;
+  vector<int> centers_ids;
 	centers_ids.push_back(dis(gen));
 	(*centers).push_back((*data)[centers_ids[0]]);
 
@@ -622,16 +636,14 @@ cout << "initialization2" << endl;
 		// Normalize P
 		for (unsigned int i = 0; i < P.size(); ++i)
 		{
-			P[i] = P[i]/max_D_i; 
+			P[i] = P[i]/max_D_i;
 		}
 
     	uniform_real_distribution<> dis(0.0, P[P.size()-1]/1.0);
 
     	double x = dis(gen);
-// cout << "x is " << x << " and p is " << P[P.size()-1] <<endl;
    		int r = this->binary_search(&P, x);	// P(r-1) < x <= P(r)
-// if ( r!=0 )cout << "p(r-1) is " << P[r-1] << endl;
-// cout << "p(r) is " << P[r] << endl;
+
    		int c_num = 0;
 
    		// Find num of centers before the r_pos
@@ -666,18 +678,18 @@ cout << "initialization2" << endl;
 
 	centers_ids.clear();
 
-// cout << "centers are " << endl;
-// for (unsigned int i = 0; i < centers_ids.size(); ++i)
-// {
-// 	cout << centers_ids[i] << endl;
-// }
-cout << "end of initialization2" << endl;
+	#if DEBUG
+		cout << "end of initialization2" << endl;
+	#endif
 }
 
 template<class D>
 void Clustering::assignment1(vector<D*>* centers, vector<D*>* data){
 
-cout << "assignment1" << endl;
+	#if DEBUG
+		cout << "assignment1" << endl;
+	#endif
+
 	// Erase the previous clusters
 	this->clusters.clear();
 
@@ -702,19 +714,21 @@ cout << "assignment1" << endl;
 				min_dist = cur_dist;
 				min_clust = j;
 			}
-			
+
 		}
 		this->clusters.insert(pair<int, int> (min_clust, i));
 	}
 
-// // Print clusters
-// multimap <int, int> :: iterator itr;
-// for (itr = this->clusters.begin(); itr != this->clusters.end(); ++itr) 
-//     { 
-//         cout << '\t' << itr->first 
-//              << '\t' << itr->second << '\n'; 
-//     } 
-cout << "end of assignment1" << endl;
+	#if DEBUG
+	// // Print clusters
+	// multimap <int, int> :: iterator itr;
+	// for (itr = this->clusters.begin(); itr != this->clusters.end(); ++itr)
+	//     {
+	//         cout << '\t' << itr->first
+	//              << '\t' << itr->second << '\n';
+	//     }
+	cout << "end of assignment1" << endl;
+	#endif
 }
 
 template <typename lsh_type, typename vector_type>
@@ -776,7 +790,7 @@ void Clustering::assignment2(lsh_type * lsh, vector <vector_type *> * data, vect
 			this->clusters.insert(make_pair(clusters_temp[data->at(i)], i));
 		}
 		else
-		{	
+		{
 			double min_dist = this->distance(data->at(i), centers->at(0));
 			int min_cluster = 0;
 			for (unsigned int cluster = 1; cluster < centers->size() ; cluster++)
@@ -796,13 +810,15 @@ void Clustering::assignment2(lsh_type * lsh, vector <vector_type *> * data, vect
 
 	#if DEBUG
 		cout << "Clustering::assignment2 out" << endl;
-	#endif 
+	#endif
 }
 
 template<class D>
 bool Clustering::update1(vector<D*>* centers, vector<D*>* data){
 
-cout << "update1" << endl;
+	#if DEBUG
+		cout << "update1" << endl;
+	#endif
 
 	vector<D*> new_centers;
 	D* new_center;
@@ -812,7 +828,7 @@ cout << "update1" << endl;
 		// Initialize values
 		double min_obj_fun = -1, cur_obj_fun;
 		pair <multimap<int, int>::iterator, multimap<int, int>::iterator> range = this->clusters.equal_range(i);
-		for (auto map_itr = range.first; map_itr != range.second; ++map_itr) // For every different center 
+		for (auto map_itr = range.first; map_itr != range.second; ++map_itr) // For every different center
 		{
 			cur_obj_fun = 0;
 			D* current_center = (*data)[map_itr->second];
@@ -832,10 +848,10 @@ cout << "update1" << endl;
 		new_centers.push_back(new_center);
 	}
 	bool changed = this->centers_changed<D>(&new_centers, centers, data);
-	
+
 	// Change centers if needed
 	if (changed)
-	{	
+	{
 		// Update centers
 		for (unsigned int i = 0; i < (*centers).size(); ++i)
 		{
@@ -843,15 +859,19 @@ cout << "update1" << endl;
 		}
 	}
 	new_centers.clear();
-cout << "end of update1" << endl;
+
+	#if DEBUG
+	cout << "end of update1" << endl;
+	#endif
+
 	return changed;
 }
 
 // Class Point_Clustering functions
 Point_Clustering::Point_Clustering(short int flag, int cluster_num, vector<Point*>* data,  LSH * lsh) : Clustering(cluster_num)
 {
-	#if DEBUG 
-		cout << "Point_clustering in " << flag << endl; 
+	#if DEBUG1
+		cout << "Point_clustering in " << flag << endl;
 	#endif
 
 	this->flag = flag;
@@ -865,7 +885,7 @@ Point_Clustering::Point_Clustering(short int flag, int cluster_num, vector<Point
 		this->initialization2<Point>(cluster_num, &this->centers, data);
 	}
 
-	int reps = 20;	// Maximum number of updates
+	int reps = 50;	// Maximum number of updates
 	if (this->flag < 4)	// 0xx == Update 1
 	{
 		do
@@ -901,7 +921,7 @@ Point_Clustering::Point_Clustering(short int flag, int cluster_num, vector<Point
 		while (reps-- && update2(data));
 	}
 
-	#if DEBUG
+	#if DEBUG1
 		cout << "Point_Clustering out " << flag << endl;
 	#endif
 }
@@ -915,7 +935,7 @@ Point_Clustering::~Point_Clustering()
 			delete this->centers.at(i);
 		}
 	}
-	
+
 	this->centers.clear();
 }
 
@@ -959,7 +979,7 @@ bool Point_Clustering::update2(vector<Point*>* data)
 		{
 			for (unsigned int j = 0; j < mean_vector.size(); j++)
 			{
-				mean_vector.at(j) += (*(data->at(it->second)))[j];			
+				mean_vector.at(j) += (*(data->at(it->second)))[j];
 			}
 		}
 
@@ -973,7 +993,16 @@ bool Point_Clustering::update2(vector<Point*>* data)
 		new_mean_centers.push_back(true);
 	}
 
-	bool changed = this->centers_changed<Point>(&new_centers, &this->centers, data);
+	// bool changed = this->centers_changed<Point>(&new_centers, &(this->centers), data);
+
+	bool changed = false;
+	for (unsigned int i = 0; i < this->centers.size(); i++)
+	{
+		if (new_centers.at(i) != NULL && (this->distance(this->centers.at(i), new_centers.at(i)) >1))
+		{
+			changed = true;
+		}
+	}
 
 	// Δεν εχω καταλαβει γιατι το κανεις αυτο
 	// Replace the centers if needed
@@ -1064,7 +1093,7 @@ void Point_Clustering::write_output(string output_file, double time, bool option
 	myfile << "Silhouette: [";
 	for (unsigned int j = 0; j < this->centers.size(); ++j)
 		myfile << S[j] << ", ";
-	myfile << total_S << "]" << endl;
+	myfile << (total_S/this->centers.size()) << "]" << endl;
 
 	S.clear();
 
@@ -1084,7 +1113,7 @@ void Point_Clustering::write_output(string output_file, double time, bool option
 					myfile << ", ";
 			}
 			myfile << "}" << endl;
-			
+
 		}
 	}
 	myfile << endl << endl;
@@ -1094,8 +1123,8 @@ void Point_Clustering::write_output(string output_file, double time, bool option
 // Class Curve_Clustering functions
 Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve*>* data, Grid_LSH* grid_lsh, int min_d, int max_d) : Clustering(cluster_num)
 {
-	#if DEBUG 
-		cout << "curves_clustering in" << endl; 
+	#if DEBUG1
+		cout << "curves_clustering in" << endl;
 	#endif
 
 	this->flag = flag;
@@ -1109,7 +1138,7 @@ Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve
 		this->initialization2<Curve>(cluster_num, &this->centers, data);
 	}
 
-	int reps = 20;	// Maximum number of updates
+	int reps = 50;	// Maximum number of updates
 	if (this->flag < 4)	// 0xx == Update 1
 	{
 		do
@@ -1138,8 +1167,8 @@ Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve
 		}
 		while (reps-- && update2(data));
 	}
-	
-	#if DEBUG
+
+	#if DEBUG1
 		cout << "Curve_Clustering out" << endl;
 	#endif
 }
@@ -1147,7 +1176,7 @@ Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve
 Curve_Clustering::~Curve_Clustering()
 {
 	#if DEBUG
-		cout << "Curve_Clustering in" << endl;
+		cout << "~Curve_Clustering in" << endl;
 	#endif
 
 	for (unsigned int i = 0; i < this->centers.size(); i++)
@@ -1157,11 +1186,11 @@ Curve_Clustering::~Curve_Clustering()
 			delete this->centers.at(i);
 		}
 	}
-	
+
 	this->centers.clear();
 
 	#if DEBUG
-		cout << "Curve_Clustering out" << endl;
+		cout << "~Curve_Clustering out" << endl;
 	#endif
 }
 
@@ -1214,8 +1243,8 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 
 		// Find random curve of size >= mean_dim
 		random_device rd;  //Will be used to obtain a seed for the random number engine
-    	mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    	uniform_int_distribution<int> dis(0, counter-1);
+    mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    uniform_int_distribution<int> dis(0, counter-1);
 		int random_curve = dis(gen);
 		int random_curve_pos;
 		for (multimap<int,int>::iterator it=range.first; it!=range.second; ++it)
@@ -1277,6 +1306,8 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 				new_mean_curve->add_point(x, y);
 			}
 
+			delete []  A;
+
 		} while (DTW_distance(mean_curve, new_mean_curve) == 0);
 
 		delete new_mean_curve;
@@ -1285,7 +1316,22 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 		new_centers.push_back(mean_curve);
 	}
 
-	bool changed = this->centers_changed<Curve>(&new_centers, &this->centers, data);
+	// TODO  synartisi annas
+	// Compare old centers with new centers
+	// If you have to continue return true else false
+
+	// bool changed = synarthsh annas
+
+	bool changed = false;
+	for (unsigned int i = 0; i < this->centers.size(); i++)
+	{
+		if (new_centers.at(i) != NULL && (this->distance(this->centers.at(i), new_centers.at(i)) >1))
+		{
+			changed = true;
+		}
+	}
+
+	// bool changed = this->centers_changed<Curve>(&new_centers, &(this->centers), data);
 
 	// Replace the centers if needed
 	if (changed)
@@ -1318,10 +1364,8 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 		cout << "Curve_Clustering::update2 out" << endl;
 	#endif
 
-	// return changed;
-	return true;
+	return changed;
 }
-
 
 double Curve_Clustering::distance(Curve *c1, Curve *c2)
 {
@@ -1395,7 +1439,7 @@ void Curve_Clustering::write_output(string output_file, double time, bool option
 					myfile << ", ";
 			}
 			myfile << "}" << endl;
-			
+
 		}
 	}
 

@@ -26,7 +26,7 @@ double Point::operator[](unsigned int i){
 	 if ( i>=0 && i<this->X.size() )
 	 	return this->X[i];
 	 else
-	 	return -1; 
+	 	return -1;
 }
 
 // Class curve functions
@@ -40,7 +40,7 @@ Curve::~Curve()
 }
 
 string Curve::get_id(void)
-{ 
+{
 	return this->curve_id;
 }
 
@@ -165,7 +165,7 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 				return NULL;
 			}
 			flag = stoi(argv[i+1]);
-			if (flag < 0 || !(flag == 0 || flag == 111 || flag == 121 || flag == 112 || flag == 122 || flag == 211 || flag == 212 || flag == 221 || flag == 222))
+			if (flag < 0 || flag > 7)
 			{
 				cerr << "Flag must describe the combination of initialization|assignement|update" << endl;
 				return NULL;
@@ -195,7 +195,7 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 	data.close();
 	if (!line.compare(0, 7, "vectors"))
 	{
-		try 
+		try
 		{
 			return_value = new Classification_Points(data_file, (*output_file), config, flag, (*complete));
 		}
@@ -203,7 +203,7 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 	}
 	else if(!line.compare(0, 6, "curves"))
 	{
-		try 
+		try
 		{
 			return_value = new Classification_Curves(data_file, (*output_file), config, flag, (*complete));
 		}
@@ -215,9 +215,6 @@ Classification * dataHandling(int argc, char * argv[], string * output_file, boo
 
 
 double DTW_distance(Curve* x1, Curve* x2, vector<pair<int, int>>* opt_trav){
-
-	if ( x1 == NULL || x2 == NULL )
-		return -1;
 
 	int m1 = x1->get_length();
 	int m2 = x2->get_length();
@@ -328,9 +325,6 @@ double eucl_dist(pair<double, double> x, pair<double, double> y){
 
 double manhattan_dist(Point* x, Point* y){
 
-	if ( x == NULL || y == NULL || x->get_dimension() != y->get_dimension() )
-		return -1;
-
 	double distance = 0;
 	int xi, yi;
 	double d;
@@ -343,7 +337,7 @@ double manhattan_dist(Point* x, Point* y){
 		if ( d >= 0 )
 			distance += d;
 		else
-			distance += yi - xi; 
+			distance += yi - xi;
 	}
 
 	return distance;
@@ -483,7 +477,7 @@ bool point_proccessing(vector<Point*>* points, string p, int d){
 	}
 	catch(std::bad_alloc&) {
 		cerr << "No memory available" << endl;
-		return false;   
+		return false;
 	}
 	X.clear();
 

@@ -10,7 +10,7 @@ int main(int argc, char * argv [])
 	string output_file;
 	bool complete;
 
-	Classification * classification = dataHandling(argc, argv, &output_file, &complete); 
+	Classification * classification = dataHandling(argc, argv, &output_file, &complete);
 	if (classification == NULL)
 	{
 		return 1;
