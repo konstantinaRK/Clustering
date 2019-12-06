@@ -6,11 +6,10 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
-#include <bits/stdc++.h>
+#include <bits/stdc++.h> 
 #include "./classification.hpp"
 
 #define DEBUG 1
-#define DEBUG1 1
 
 using namespace std;
 
@@ -41,7 +40,7 @@ class Curve
 		int get_length(void);
 		pair<double, double> operator[](int i);
 		void clear(void);
-
+	
 };
 
 class NN {
@@ -51,7 +50,7 @@ class NN {
 	public:
 		NN(string id, double distance, set<string>* neighbors=NULL);
 		~NN();
-		inline string get_id(void){ return this->id; }
+		inline string get_id(void){ return this->id; } 
 		inline double get_distance(void){ return this->distance; }
 		unsigned int r_near_neighbors_size();
 		string get_near_neighbor(int i);
