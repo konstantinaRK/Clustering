@@ -553,7 +553,7 @@ double Clustering::Cluster_Silhouette(vector<D*>* data, vector<D*>* centers, int
 	}
 
 	if ( cluster_size!=0 )
-		return S/cluster_size;
+		return (S/cluster_size);
 	else
 		return -2;
 }
@@ -1138,7 +1138,7 @@ Curve_Clustering::Curve_Clustering(short int flag, int cluster_num, vector<Curve
 		this->initialization2<Curve>(cluster_num, &this->centers, data);
 	}
 
-	int reps = 50;	// Maximum number of updates
+	int reps = 100;	// Maximum number of updates
 	if (this->flag < 4)	// 0xx == Update 1
 	{
 		do
@@ -1421,7 +1421,7 @@ void Curve_Clustering::write_output(string output_file, double time, bool option
 	myfile << "Silhouette: [";
 	for (unsigned int j = 0; j < this->centers.size(); ++j)
 		myfile << S[j] << ", ";
-	myfile << total_S << "]" << endl;
+	myfile << total_S/S.size() << "]" << endl;
 
 	S.clear();
 
