@@ -47,7 +47,7 @@ m_e_a = abs_diff.mean().mean()
 
 # Find the mean absolute percentage error
 abs_diff_perc = np.divide(abs_diff, actual_results, out=np.zeros_like(abs_diff), where=actual_results!=0)
-m_e_p_a = abs_diff_perc.mean().mean()
+m_e_p_a = abs_diff_perc.mean().mean() * 100
 
 # Find the mean square error
 square_difference = np.power(difference, 2)
@@ -59,5 +59,5 @@ csv_contents = np.hstack((timestamps,result))
 # Write final results to csv
 with open('predicted.csv', 'w') as file:
 	writer = csv.writer(file)
-	writer.writerow(["MAE:" + str(m_e_a), "MAPE:" + str(m_e_p_a), "MSE:" + str(m_s_e)])
+	writer.writerow(["MAE:" + str(m_e_a), "MAPE:" + str(m_e_p_a) + "%", "MSE:" + str(m_s_e)])
 	writer.writerows(csv_contents)
