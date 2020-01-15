@@ -1214,7 +1214,6 @@ bool Curve_Clustering::update2(vector<Curve*>* data)
 			if (random_curve == 0) break;
 		}
 
-if (data->at(random_curve_pos)->get_length() < mean_dim)cout << data->at(random_curve_pos)->get_length() << " " << mean_dim << endl;
 		// Create the curve for the algorithm
 		Curve * mean_curve = NULL;
 		Curve * new_mean_curve = new Curve("none");

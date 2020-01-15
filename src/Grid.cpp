@@ -89,7 +89,7 @@ Grid_LSH::Grid_LSH(vector<Curve*>* curves, int L_grid, int k_vec, int max_d, int
 			for (unsigned int j = 0; j < points.size(); ++j)
 			{
 				cur_d = points[j].size();
-				for (int k = cur_d; k < max_d; ++k)
+				for (int k = cur_d; k < 2*max_d; ++k)
 				{
 					points[j].push_back((this->snap_num)[i]);
 				}
