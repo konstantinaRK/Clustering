@@ -33,7 +33,9 @@ result = intermediate_model.predict(data)
 # Concatenate timestamps with result matrix
 csv_contents = np.hstack((timestamps,result))
 
+print(csv_contents)
+
 # Write final results to csv
 with open('new_representation.csv', 'w') as file:
-	writer = csv.writer(file)
+	writer = csv.writer(file, delimiter = '\t')
 	writer.writerows(csv_contents)
